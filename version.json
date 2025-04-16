@@ -1,11 +1,11 @@
 {
-  "major": 0,
-  "minor": 1,
-  "patch": 1,
+  "major": 1,
+  "minor": 0,
+  "patch": 6,
   "history": [
     {
-      "version": "0.1.1",
-      "date": "2025-04-16",
+      "version": "1.0.6",
+      "date": "2025-04-18",
       "notes": "Fixed property access issues on task homepage and improved task dashboard rendering"
     }
   ]
