@@ -35,7 +35,7 @@
       "tags": ["bugfix", "frontend", "backend"],
       "estimated_hours": 2,
       "actual_hours": 1.5,
-      "version": "0.1.1"
+      "version": "1.0.6"
     },
     {
       "id": 1,
