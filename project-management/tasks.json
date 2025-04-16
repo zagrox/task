@@ -1,131 +1,52 @@
 {
   "metadata": {
-    "total_tasks": 5,
-    "completed_tasks": 2,
-    "user_tasks": 3,
-    "ai_tasks": 2,
-    "last_updated": "2023-08-05T10:30:00Z"
+    "total_tasks": 6,
+    "completed_tasks": 6,
+    "user_tasks": 2,
+    "ai_tasks": 4,
+    "last_updated": "2025-04-18T10:30:00Z"
   },
-  "next_id": 6,
+  "next_id": 7,
   "tasks": [
     {
-      "id": 1,
-      "title": "Set up version control system",
-      "description": "Implement the version control scripts as outlined in the roadmap document",
-      "assignee": "user",
-      "status": "completed",
-      "priority": "high",
-      "created_at": "2023-05-10T09:00:00Z",
-      "updated_at": "2023-05-15T16:30:00Z",
-      "due_date": "2023-05-15",
-      "related_feature": "Version Control",
-      "related_phase": "P1-SETUP",
-      "dependencies": [],
-      "progress": 100,
-      "notes": [
-        {
-          "content": "Completed scripts for version control",
-          "timestamp": "2023-05-15T16:30:00Z"
-        }
-      ],
-      "tags": ["backend", "infrastructure"],
-      "estimated_hours": 8,
-      "actual_hours": 10,
-      "version": "1.0.0"
-    },
-    {
-      "id": 2,
-      "title": "Create email template system",
-      "description": "Develop reusable templates for system emails",
-      "assignee": "user",
-      "status": "completed",
-      "priority": "medium",
-      "created_at": "2023-06-10T09:00:00Z",
-      "updated_at": "2023-06-15T15:30:00Z",
-      "due_date": "2023-06-15",
-      "related_feature": "Email System",
-      "related_phase": "P2-CORE",
-      "dependencies": [1],
-      "progress": 100,
-      "notes": [
-        {
-          "content": "Completed template system with 5 base templates",
-          "timestamp": "2023-06-15T15:30:00Z"
-        }
-      ],
-      "tags": ["frontend", "email"],
-      "estimated_hours": 12,
-      "actual_hours": 10,
-      "version": "1.0.2"
-    },
-    {
-      "id": 3,
-      "title": "Optimize database queries",
-      "description": "Improve performance of key database operations",
+      "id": 6,
+      "title": "Fix render issues on task dashboard",
+      "description": "Fixed property access issues with tasks array and improved dashboard rendering for better task visualization",
       "assignee": "ai",
-      "status": "in-progress",
+      "status": "completed",
       "priority": "high",
-      "created_at": "2023-07-01T09:00:00Z",
-      "updated_at": "2023-07-05T14:00:00Z",
-      "due_date": "2023-07-10",
-      "related_feature": "Performance",
+      "created_at": "2025-04-18T10:00:00Z",
+      "updated_at": "2025-04-18T10:30:00Z",
+      "due_date": "2025-04-18",
+      "related_feature": "Task Management",
       "related_phase": "P3-ENHANCED",
-      "dependencies": [],
-      "progress": 60,
+      "dependencies": [1, 3],
+      "progress": 100,
       "notes": [
         {
-          "content": "Identified slow queries",
-          "timestamp": "2023-07-02T11:30:00Z"
+          "content": "Fixed object property access on arrays by converting to array notation",
+          "timestamp": "2025-04-18T10:15:00Z"
         },
         {
-          "content": "Applied indexes to improve join performance",
-          "timestamp": "2023-07-05T14:00:00Z"
+          "content": "Added fallback array filtering for statistics when not provided by controller",
+          "timestamp": "2025-04-18T10:30:00Z"
         }
       ],
-      "tags": ["backend", "database", "performance"],
-      "estimated_hours": 15,
-      "actual_hours": 9,
-      "version": "1.0.3"
+      "tags": ["bugfix", "frontend", "backend"],
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "0.1.1"
     },
     {
-      "id": 4,
-      "title": "Implement file attachment handling",
-      "description": "Add support for file attachments to emails",
-      "assignee": "user",
-      "status": "in-progress",
-      "priority": "medium",
-      "created_at": "2023-07-12T10:00:00Z",
-      "updated_at": "2023-07-18T16:00:00Z",
-      "due_date": "2023-07-20",
-      "related_feature": "Attachments",
-      "related_phase": "P2-CORE",
-      "dependencies": [2],
-      "progress": 80,
-      "notes": [
-        {
-          "content": "Built file upload interface",
-          "timestamp": "2023-07-15T13:30:00Z"
-        },
-        {
-          "content": "Completed storage configuration for attachments",
-          "timestamp": "2023-07-18T16:00:00Z"
-        }
-      ],
-      "tags": ["frontend", "backend", "attachments"],
-      "estimated_hours": 20,
-      "actual_hours": 16,
-      "version": "1.0.4"
-    },
-    {
-      "id": 5,
+      "id": 1,
       "title": "Create task management system",
       "description": "Build a comprehensive task tracking system for project management",
       "assignee": "ai",
       "status": "completed",
       "priority": "high",
-      "created_at": "2023-08-01T09:00:00Z",
-      "updated_at": "2023-08-05T10:30:00Z",
-      "due_date": "2023-08-15",
+      "created_at": "2025-04-16T18:00:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
       "related_feature": "Task Management",
       "related_phase": "P3-ENHANCED",
       "dependencies": [],
@@ -133,12 +54,116 @@
       "notes": [
         {
           "content": "Successfully implemented task management system",
-          "timestamp": "2023-08-05T10:30:00Z"
+          "timestamp": "2025-04-16T19:45:00Z"
         }
       ],
       "tags": ["frontend", "backend", "project-management"],
       "estimated_hours": 25,
       "actual_hours": 28,
+      "version": "1.0.5"
+    },
+    {
+      "id": 2,
+      "title": "Create rollback functionality",
+      "description": "Implement script for rolling back to previous versions with database backups",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-16T18:30:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Version Control",
+      "related_phase": "P2-CORE",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created rollback.sh script with full version and database backup support",
+          "timestamp": "2025-04-16T18:52:00Z"
+        }
+      ],
+      "tags": ["backend", "version-control", "database"],
+      "estimated_hours": 5,
+      "actual_hours": 4,
+      "version": "1.0.5"
+    },
+    {
+      "id": 3,
+      "title": "Fix 404 error on tasks page",
+      "description": "Debug and fix 404 errors with routing and configuration for the task management pages",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "critical",
+      "created_at": "2025-04-16T19:00:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Task Management",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [1],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created RouteServiceProvider to handle routing",
+          "timestamp": "2025-04-16T19:15:00Z"
+        },
+        {
+          "content": "Fixed .htaccess for subdirectory installation",
+          "timestamp": "2025-04-16T19:30:00Z"
+        }
+      ],
+      "tags": ["backend", "routing", "bugfix"],
+      "estimated_hours": 3,
+      "actual_hours": 2,
+      "version": "1.0.5"
+    },
+    {
+      "id": 4,
+      "title": "Configure virtual host for direct access",
+      "description": "Set up Apache virtual host to provide direct access to the application without /public/ in the URL",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-16T19:20:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Infrastructure",
+      "related_phase": "P1-SETUP",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Configured virtual host at mailzila.local",
+          "timestamp": "2025-04-16T19:35:00Z"
+        }
+      ],
+      "tags": ["server", "configuration", "apache"],
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "1.0.5"
+    },
+    {
+      "id": 5,
+      "title": "Release version 1.0.5",
+      "description": "Package and release the new version with task management functionality",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-16T19:40:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [1, 2, 3, 4],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Tagged v1.0.5 in Git repository",
+          "timestamp": "2025-04-16T19:45:00Z"
+        }
+      ],
+      "tags": ["release", "version-control"],
+      "estimated_hours": 1,
+      "actual_hours": 1,
       "version": "1.0.5"
     }
   ]
