@@ -1,0 +1,15 @@
+{
+  "features": [
+    {
+      "name": "Version Control System",
+      "phase": "P1-SETUP",
+      "branch": "feature/20230801_P1-SETUP_version-control-system",
+      "created": "2023-08-01",
+      "status": "in-progress",
+      "ai_tasks": ["AI-VC-002", "AI-FT-003"]
+    }
+  ],
+  "index": {
+    "Version Control System": 0
+  }
+} 

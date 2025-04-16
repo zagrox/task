@@ -1,0 +1,21 @@
+{
+  "phases": [
+    {
+      "name": "Initial Setup",
+      "ref": "P1-SETUP",
+      "description": "Set up version control system and project infrastructure",
+      "start_date": "2023-08-01",
+      "features": [],
+      "completed": false
+    }
+  ],
+  "current_phase": "P1-SETUP",
+  "indexes": {
+    "by_name": {
+      "Initial Setup": 0
+    },
+    "by_ref": {
+      "P1-SETUP": 0
+    }
+  }
+} 
