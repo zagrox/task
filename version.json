@@ -1,12 +1,58 @@
 {
-  "major": 0,
-  "minor": 1,
-  "patch": 1,
+  "major": 1,
+  "minor": 0,
+  "patch": 5,
+  "version": "1.0.5",
+  "previous_versions": ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4"],
   "history": [
     {
-      "version": "0.1.1",
-      "date": "2025-04-16",
-      "notes": "Re-adding task management system"
+      "version": "1.0.0",
+      "date": "2023-05-15",
+      "notes": "Initial release"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2023-06-01",
+      "notes": "Bug fixes and improvements"
+    },
+    {
+      "version": "1.0.2",
+      "date": "2023-06-15",
+      "notes": "Added email templates"
+    },
+    {
+      "version": "1.0.3",
+      "date": "2023-07-01",
+      "notes": "Performance improvements"
+    },
+    {
+      "version": "1.0.4",
+      "date": "2023-07-15",
+      "notes": "Added attachment handling"
+    },
+    {
+      "version": "1.0.5",
+      "date": "2023-08-01",
+      "notes": "Added task management system"
     }
-  ]
+  ],
+  "backups": [],
+  "indexes": {
+    "by_date": {
+      "2023-05-15": 0,
+      "2023-06-01": 1,
+      "2023-06-15": 2,
+      "2023-07-01": 3,
+      "2023-07-15": 4,
+      "2023-08-01": 5
+    },
+    "by_version": {
+      "1.0.0": 0,
+      "1.0.1": 1,
+      "1.0.2": 2,
+      "1.0.3": 3,
+      "1.0.4": 4,
+      "1.0.5": 5
+    }
+  }
 }
