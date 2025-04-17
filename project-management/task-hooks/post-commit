@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Get the last commit message
+COMMIT_MSG=$(git log -1 HEAD --pretty=format:%s)
+
+# Path to the Laravel root directory - adjust as needed
+LARAVEL_DIR=$(git rev-parse --show-toplevel)
+
+# Update task status based on commit message
+cd $LARAVEL_DIR && php artisan tasks:update-status --commit-message="$COMMIT_MSG"
+
+exit 0 

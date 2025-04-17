@@ -4,6 +4,8 @@
     </IfModule>
 
     RewriteEngine On
+    # Add RewriteBase for subdirectory installation
+    RewriteBase /mailzila/public
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

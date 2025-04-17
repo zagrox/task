@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Path to the PHP executable - change if needed
+PHP_BIN=$(which php)
+
+# Get the absolute path to the project root
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+
+# Change to the project root directory
+cd "$PROJECT_ROOT" || exit 1
+
+# Run the task status update command
+$PHP_BIN artisan tasks:update-status --auto-complete
+
+# Exit with the status of the last command
+exit $? 

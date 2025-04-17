@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Get the commit message
+commit_msg=$(git log -1 --pretty=%B)
+
+# Check if the commit message indicates a completed task
+if [[ $commit_msg =~ .*"fixes task #"([0-9]+).* ]] || [[ $commit_msg =~ .*"closes task #"([0-9]+).* ]]; then
+    task_id=${BASH_REMATCH[1]}
+    
+    # Update the task status to completed
+    cd "$(git rev-parse --show-toplevel)"
+    php artisan tasks:update-status $task_id completed --progress=100 --message="Auto-completed via commit: $commit_msg"
+    
+    echo "✅ Automatically marked task #$task_id as completed"
+fi 

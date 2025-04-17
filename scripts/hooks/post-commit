@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# post-commit hook to trigger automatic task generation based on recent commits
+#
+
+# Get the path to the Laravel project root
+LARAVEL_ROOT=$(git rev-parse --show-toplevel)
+
+# Output color settings
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check if we're in a terminal that supports colors
+if [ -t 1 ]; then
+  IS_TERMINAL=1
+else
+  IS_TERMINAL=0
+fi
+
+# Function to echo with colors when in a terminal
+colored_echo() {
+  if [ $IS_TERMINAL -eq 1 ]; then
+    echo -e "${2}${1}${NC}"
+  else
+    echo "$1"
+  fi
+}
+
+# Change to the Laravel project root
+cd "$LARAVEL_ROOT" || exit
+
+# Check if the artisan file exists
+if [ ! -f "artisan" ]; then
+  colored_echo "Error: Laravel artisan file not found." "\033[0;31m"
+  exit 1
+fi
+
+# Run the task generator command
+colored_echo "Running automatic task generation based on recent commits..." "$YELLOW"
+php artisan tasks:generate-ai --verbose
+
+# Run the task status updater
+colored_echo "Updating task statuses..." "$YELLOW"
+php artisan tasks:update-status --due-warning --auto-complete
+
+colored_echo "Post-commit hook completed successfully." "$GREEN"
+exit 0 

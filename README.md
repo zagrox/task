@@ -12,11 +12,16 @@ MailZila is a project focused on providing mail management services with enterpr
   - `ROADMAP.md` - Project roadmap and phase information
   - `RESTORE.md` - Restoration procedures and guides
   - `SETUP_INSTRUCTIONS.md` - Initial setup instructions
+  - `PROJECT-MANAGEMENT.md` - Task management system documentation
   - `/roadmap` - Detailed phase documentation
 - `/scripts` - Shell scripts for version control, backup, and automation
+  - `task-manager.sh` - Task management script for users and AI
+- `/project-management` - Task tracking data
+  - `tasks.json` - Central task repository
 - `/backups` - Backup storage location
 - `/app` - Laravel application code
   - `/Console/Commands/GitMonitor.php` - Git monitoring command
+  - `/Console/Commands/ProjectDashboard.php` - Project dashboard command
 
 ## Version Control System
 
@@ -27,6 +32,15 @@ MailZila incorporates a robust version control framework:
 - **Backup System**: Incremental and full backup capabilities for code, database, and assets
 - **Restoration Procedures**: Comprehensive guides for system restoration
 - **Roadmap Management**: Structured project phases with milestone tracking
+
+## Project Management System
+
+The project includes an integrated task management system:
+
+- **Task Tracking**: Central JSON-based task repository for both users and AI
+- **Command-line Management**: Shell script for adding, updating, and listing tasks
+- **Project Dashboard**: Interactive artisan command with filtering and sorting
+- **AI Integration**: Transparent tracking of AI agent tasks alongside user tasks
 
 ## Getting Started
 
@@ -45,10 +59,16 @@ Follow the setup instructions in `docs/SETUP_INSTRUCTIONS.md` to initialize the 
 3. Make a release with `./scripts/release.sh [major|minor|patch] "Release notes"`
 4. Create backups with `./scripts/backup.sh`
 5. Monitor project status with `php artisan git:monitor`
+6. Manage tasks with `./scripts/task-manager.sh [add|update|note|list|report]`
+7. View project dashboard with `php artisan project:dashboard`
 
 ## Roadmap
 
 The project roadmap is available in `docs/ROADMAP.md` with detailed phase information in the `docs/roadmap/` directory.
+
+## Task Management
+
+For task management details, refer to `docs/PROJECT-MANAGEMENT.md` to understand the task system structure and usage.
 
 ## Restoration
 

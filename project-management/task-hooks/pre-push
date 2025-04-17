@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Path to the Laravel root directory - adjust as needed
+LARAVEL_DIR=$(git rev-parse --show-toplevel)
+
+# Generate AI tasks based on recent changes
+cd $LARAVEL_DIR && php artisan tasks:generate-ai
+
+exit 0 

@@ -414,7 +414,11 @@ This step integrates an AI assistant into the development workflow to provide co
       {"id": "AI-FT-003", "type": "feature_tracking", "check_frequency": "daily"},
       {"id": "AI-BR-004", "type": "backup_restore", "check_frequency": "weekly"},
       {"id": "AI-CM-005", "type": "change_management", "check_frequency": "continuous"},
-      {"id": "AI-RC-006", "type": "regular_checkin", "check_frequency": "weekly", "day": "Monday"}
+      {"id": "AI-RC-006", "type": "regular_checkin", "check_frequency": "weekly", "day": "Monday"},
+      {"id": "AI-GT-007", "type": "git_workflow", "check_frequency": "daily"},
+      {"id": "AI-DB-008", "type": "database_monitoring", "check_frequency": "daily"},
+      {"id": "AI-SC-009", "type": "security_audit", "check_frequency": "weekly"},
+      {"id": "AI-DX-010", "type": "developer_experience", "check_frequency": "weekly"}
     ],
     "created_at": "2023-08-01",
     "updated_at": "2023-08-01"

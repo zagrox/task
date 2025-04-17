@@ -1,0 +1,21 @@
+{
+  "assistant": {
+    "name": "MailZila Dev Assistant",
+    "version": "1.0.0",
+    "responsibilities": [
+      {"id": "AI-RM-001", "type": "roadmap_monitoring", "check_frequency": "daily", "description": "Track and report on roadmap phases and progress"},
+      {"id": "AI-VC-002", "type": "version_control", "check_frequency": "continuous", "description": "Monitor version control adherence and assist with versioning tasks"},
+      {"id": "AI-FT-003", "type": "feature_tracking", "check_frequency": "daily", "description": "Track feature implementation and assist with branch management"},
+      {"id": "AI-BR-004", "type": "backup_restore", "check_frequency": "weekly", "description": "Assist with backup and restoration procedures"},
+      {"id": "AI-CM-005", "type": "change_management", "check_frequency": "continuous", "description": "Support change management process and ensure proper documentation"},
+      {"id": "AI-RC-006", "type": "regular_checkin", "check_frequency": "weekly", "day": "Monday", "description": "Provide regular status updates and identify potential roadblocks"},
+      
+      {"id": "AI-GT-007", "type": "git_workflow", "check_frequency": "daily", "description": "Optimize git branch strategies and enforce commit message standards"},
+      {"id": "AI-DB-008", "type": "database_monitoring", "check_frequency": "daily", "description": "Track database migrations and schema changes across branches"},
+      {"id": "AI-SC-009", "type": "security_audit", "check_frequency": "weekly", "description": "Perform routine code security checks and identify potential vulnerabilities"},
+      {"id": "AI-DX-010", "type": "developer_experience", "check_frequency": "weekly", "description": "Suggest workflow improvements and optimize development tools"}
+    ],
+    "created_at": "2023-08-01",
+    "updated_at": "2023-08-01"
+  }
+} 
