@@ -1,48 +1,13 @@
 {
   "major": 1,
   "minor": 0,
-  "patch": 7,
+  "patch": 0,
   "history": [
     {
-      "version": "1.0.7",
-      "date": "2025-04-17",
-      "notes": "Added version management tab to task dashboard with Git status tracking and repository push functionality"
-    },
-    {
-      "version": "1.0.6",
-      "date": "2025-04-18",
-      "notes": "Fixed render issues on task dashboard and property access issues with tasks array"
-    },
-    {
-      "version": "1.0.5",
-      "date": "2025-04-16",
-      "notes": "Added task management system with rollback functionality and fixed 404 errors"
-    },
-    {
-      "version": "1.0.4",
-      "date": "2025-03-10",
-      "notes": "Implemented task filtering and improved task reports"
-    },
-    {
-      "version": "1.0.3",
-      "date": "2025-01-28",
-      "notes": "Added task export functionality and improved task edit interface"
-    },
-    {
-      "version": "1.0.2",
-      "date": "2024-12-10",
-      "notes": "Improved Git integration and added task metrics on dashboard"
-    },
-    {
-      "version": "1.0.1",
-      "date": "2024-11-05",
-      "notes": "Fixed several UI bugs and improved task creation workflow"
-    },
-    {
       "version": "1.0.0",
-      "date": "2023-08-15",
+      "date": "2025-04-17",
       "notes": "Initial release of MailZila Task Manager"
     }
   ],
-  "previous_versions": ["0.9.5", "0.9.0", "0.8.5", "0.8.0"]
+  "previous_versions": []
 }
