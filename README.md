@@ -22,6 +22,7 @@ MailZila is a project focused on providing mail management services with enterpr
 - `/app` - Laravel application code
   - `/Console/Commands/GitMonitor.php` - Git monitoring command
   - `/Console/Commands/ProjectDashboard.php` - Project dashboard command
+  - `/Console/Commands/SyncTasksToGitHub.php` - GitHub issue synchronization command
 
 ## Version Control System
 
@@ -41,6 +42,21 @@ The project includes an integrated task management system:
 - **Command-line Management**: Shell script for adding, updating, and listing tasks
 - **Project Dashboard**: Interactive artisan command with filtering and sorting
 - **AI Integration**: Transparent tracking of AI agent tasks alongside user tasks
+- **GitHub Integration**: Two-way synchronization between tasks and GitHub issues
+
+## GitHub Integration
+
+MailZila features a comprehensive GitHub integration:
+
+- **Two-Way Sync**: Tasks can be synchronized with GitHub issues and vice versa
+- **Web Interface**: Sync buttons on task detail and dashboard pages
+- **Command-line Tool**: Use `php artisan tasks:sync-to-github` to sync tasks to GitHub
+- **Scheduled Sync**: Automatic daily synchronization of tasks to GitHub
+- **Webhook Support**: GitHub webhook endpoint for real-time task updates
+
+For detailed setup instructions, see:
+- `github-quickstart.md` - Quick setup guide for GitHub integration
+- `github-integration.md` - Comprehensive documentation
 
 ## Getting Started
 
@@ -49,6 +65,7 @@ The project includes an integrated task management system:
 - MySQL or compatible database
 - Git
 - jq utility for JSON processing (`brew install jq`)
+- GitHub account and personal access token (for GitHub integration)
 
 ### Installation
 Follow the setup instructions in `docs/SETUP_INSTRUCTIONS.md` to initialize the project.
@@ -61,6 +78,7 @@ Follow the setup instructions in `docs/SETUP_INSTRUCTIONS.md` to initialize the 
 5. Monitor project status with `php artisan git:monitor`
 6. Manage tasks with `./scripts/task-manager.sh [add|update|note|list|report]`
 7. View project dashboard with `php artisan project:dashboard`
+8. Sync tasks to GitHub with `php artisan tasks:sync-to-github [--all|--status=pending|--task-id=123]`
 
 ## Roadmap
 
