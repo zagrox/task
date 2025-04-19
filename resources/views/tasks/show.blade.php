@@ -23,6 +23,22 @@
                     <i class="fas fa-edit me-1"></i> Edit Task
                 </a>
             </div>
+            <!-- GitHub sync button -->
+            <div class="btn-group me-2">
+                <a href="{{ route('tasks.sync-to-github', $task['id']) }}" class="btn btn-dark">
+                    <i class="fab fa-github me-1"></i> Sync to GitHub
+                </a>
+                
+                @php
+                    $githubIssue = \App\Models\GitHubIssue::where('task_id', $task['id'])->first();
+                @endphp
+                
+                @if($githubIssue && $githubIssue->issue_url)
+                    <a href="{{ $githubIssue->issue_url }}" target="_blank" class="btn btn-outline-dark">
+                        #{{ $githubIssue->issue_number }}
+                    </a>
+                @endif
+            </div>
             <div class="btn-group">
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
                     <i class="fas fa-trash me-1"></i> Delete

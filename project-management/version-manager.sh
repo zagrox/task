@@ -167,6 +167,32 @@ function update_version {
         fi
     done
     
+    # Get current version
+    CURRENT_VERSION=$(get_version)
+    
+    # Show confirmation
+    echo "========================================================"
+    echo "             VERSION UPDATE CONFIRMATION                "
+    echo "========================================================"
+    echo "Current version: $CURRENT_VERSION"
+    echo "Update type: $TYPE"
+    if [ -n "$NOTES" ]; then
+        echo "Release notes: $NOTES"
+    fi
+    echo ""
+    echo "This will create a new version and update config/app.php"
+    if [ -z "$NO_GIT" ]; then
+        echo "It will also create a Git commit and tag for this version"
+    fi
+    echo "========================================================"
+    
+    # Ask for confirmation
+    read -p "Do you want to proceed with this update? (y/n): " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+        echo "Version update canceled"
+        return 1
+    fi
+    
     # Build command
     CMD="php artisan version:update $TYPE"
     

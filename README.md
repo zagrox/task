@@ -73,3 +73,43 @@ For task management details, refer to `docs/PROJECT-MANAGEMENT.md` to understand
 ## Restoration
 
 In case of system failure, refer to `docs/RESTORE.md` for complete restoration procedures.
+
+## Git Version Management Scripts
+
+The project includes several scripts for managing Git version pushing:
+
+### `scripts/push-previous-version.sh`
+
+Pushes the version before the latest one to a Git repository. This is useful for ensuring the previous stable version is always available in the remote repository.
+
+```bash
+./scripts/push-previous-version.sh [remote] [branch]
+```
+
+- `remote`: (Optional) The remote repository name (default: "origin")
+- `branch`: (Optional) The branch name (default: current branch)
+
+### `scripts/push-all-versions.sh`
+
+Pushes all version tags to a Git repository in sequential order.
+
+```bash
+./scripts/push-all-versions.sh [remote] [branch]
+```
+
+- `remote`: (Optional) The remote repository name (default: "origin")
+- `branch`: (Optional) The branch name (default: current branch)
+
+### `scripts/push-version.sh`
+
+Pushes a specific version tag to a Git repository.
+
+```bash
+./scripts/push-version.sh <version> [remote] [branch]
+```
+
+- `version`: (Required) The version to push (e.g., "1.0.7" or "v1.0.7")
+- `remote`: (Optional) The remote repository name (default: "origin")
+- `branch`: (Optional) The branch name (default: current branch)
+
+All scripts will prompt for the repository URL if the remote is not configured, and will automatically detect and use your current branch if no branch is specified.

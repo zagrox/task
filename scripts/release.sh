@@ -113,23 +113,77 @@ fi
 
 # Create database backup
 BACKUP_DIR="backups/v$VERSION"
+BACKUP_FILE="$BACKUP_DIR/mailzila_v${VERSION}.sqlite"
 mkdir -p "$BACKUP_DIR"
+BACKUP_SUCCESS=false
 
-# Try Laravel's artisan dump command first, fallback to mysqldump
+# Function to log backup status
+log_backup_status() {
+  if [ "$BACKUP_SUCCESS" = true ]; then
+    echo "✅ Database backup created at $BACKUP_FILE"
+    
+    # Add backup entry to version.json if jq is available
+    if command -v jq &> /dev/null; then
+      if ! jq -e '.backups' "$VERSION_FILE" > /dev/null 2>&1; then
+        # Add backups array if it doesn't exist
+        jq '. + {backups:[]}' "$VERSION_FILE" > "${VERSION_FILE}.tmp" && mv "${VERSION_FILE}.tmp" "$VERSION_FILE"
+      fi
+      
+      # Add backup entry
+      jq --arg version "$VERSION" \
+         --arg date "$CURRENT_DATE" \
+         --arg path "$BACKUP_FILE" \
+         '.backups += [{version: $version, date: $date, path: $path}]' "$VERSION_FILE" > "${VERSION_FILE}.tmp" && \
+         mv "${VERSION_FILE}.tmp" "$VERSION_FILE"
+    fi
+  else
+    echo "⚠️ Could not create database backup with standard methods"
+  fi
+}
+
+# Try Laravel's artisan dump command first
 if command -v php &> /dev/null && [ -f "artisan" ]; then
-  php artisan db:dump --database="$BACKUP_DIR/mailzila_v${VERSION}.sql" 2>/dev/null
-  if [ $? -ne 0 ]; then
-    echo "Laravel db:dump failed, trying mysqldump..."
+  echo "Attempting database backup with Laravel..."
+  if php artisan schema:dump --database="$BACKUP_FILE" 2>/dev/null; then
+    BACKUP_SUCCESS=true
+    echo "✅ Database backup created with Laravel schema:dump"
+  elif php artisan db:dump --database="$BACKUP_FILE" 2>/dev/null; then
+    BACKUP_SUCCESS=true
+    echo "✅ Database backup created with Laravel db:dump"
+  else
+    echo "Laravel backup methods failed, trying mysqldump..."
+    
+    # Try mysqldump
     if command -v mysqldump &> /dev/null; then
       # Get database info from .env
       if [ -f ".env" ]; then
+        DB_CONNECTION=$(grep DB_CONNECTION .env | cut -d '=' -f2)
         DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
         DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
         DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
         
-        if [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
-          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "$BACKUP_DIR/mailzila_v${VERSION}.sql"
-          echo "Database backup created with mysqldump"
+        if [ "$DB_CONNECTION" = "sqlite" ]; then
+          echo "SQLite database detected, creating backup by copying database file..."
+          if [ -f "database/database.sqlite" ]; then
+            cp "database/database.sqlite" "$BACKUP_FILE"
+            if [ $? -eq 0 ]; then
+              BACKUP_SUCCESS=true
+              echo "✅ SQLite database backup created by file copy"
+            else
+              echo "❌ SQLite database backup failed"
+            fi
+          else
+            echo "❌ SQLite database file not found"
+          fi
+        elif [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
+          echo "MySQL database detected, creating backup using mysqldump..."
+          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "${BACKUP_FILE}.sql"
+          if [ $? -eq 0 ]; then
+            BACKUP_SUCCESS=true
+            echo "✅ MySQL database backup created with mysqldump"
+          else
+            echo "❌ MySQL backup failed"
+          fi
         else
           echo "Warning: Could not get database credentials from .env"
         fi
@@ -137,12 +191,50 @@ if command -v php &> /dev/null && [ -f "artisan" ]; then
         echo "Warning: No .env file found for database credentials"
       fi
     else
-      echo "Warning: Neither Laravel db:dump nor mysqldump available"
+      echo "Warning: Neither Laravel nor mysqldump available"
+    fi
+  fi
+else
+  echo "Laravel not detected, trying direct database backup..."
+  
+  # Try direct file copy for SQLite
+  if [ -f "database/database.sqlite" ]; then
+    echo "SQLite database detected, creating backup by copying database file..."
+    cp "database/database.sqlite" "$BACKUP_FILE"
+    if [ $? -eq 0 ]; then
+      BACKUP_SUCCESS=true
+      echo "✅ SQLite database backup created by file copy"
+    else
+      echo "❌ SQLite database backup failed"
     fi
   else
-    echo "Database backup created with Laravel db:dump"
+    echo "SQLite database file not found, checking for MySQL..."
+    
+    # Try mysqldump
+    if command -v mysqldump &> /dev/null && [ -f ".env" ]; then
+      DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
+      DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
+      DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+      
+      if [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
+        mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "${BACKUP_FILE}.sql"
+        if [ $? -eq 0 ]; then
+          BACKUP_SUCCESS=true
+          echo "✅ MySQL database backup created with mysqldump"
+        else
+          echo "❌ MySQL backup failed"
+        fi
+      else
+        echo "Warning: Could not get database credentials from .env"
+      fi
+    else
+      echo "No database backup method available"
+    fi
   fi
 fi
+
+# Log backup status
+log_backup_status
 
 # Update Laravel version if config exists
 if [ -f "config/app.php" ]; then

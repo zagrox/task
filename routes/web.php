@@ -37,3 +37,7 @@ Route::get('/ai-tasks', [App\Http\Controllers\TaskController::class, 'handleAiTa
 // Version routes
 Route::get('/tasks-versions', [VersionController::class, 'index'])->name('tasks.versions');
 Route::post('/tasks-versions/push', [VersionController::class, 'pushToRepository'])->name('tasks.versions.push');
+
+// GitHub integration routes
+Route::get('/tasks/{id}/sync-to-github', [App\Http\Controllers\TaskController::class, 'syncToGitHub'])->name('tasks.sync-to-github');
+Route::post('/api/github/webhook', [App\Http\Controllers\TaskController::class, 'githubWebhook'])->name('github.webhook');

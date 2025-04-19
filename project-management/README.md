@@ -164,4 +164,73 @@ The Laravel command is configured to run a daily report at midnight, with output
 - The shell script is ideal for quick operations from the terminal
 - The Laravel command integrates with the application's ecosystem and can be used in scheduled tasks
 
-Both tools maintain the same data, so you can use either one based on your current context. 
+Both tools maintain the same data, so you can use either one based on your current context.
+
+## Auto Task Creator
+
+The `auto-task-creator.sh` script automatically creates tasks based on git commits and can include agent result summaries as notes.
+
+### Requirements
+
+- `jq` (JSON processor)
+- `git`
+
+### Usage
+
+```bash
+./auto-task-creator.sh [options]
+```
+
+#### Options
+
+- `--commit-message "Message"`: Use a specific commit message instead of the latest one
+- `--agent-summary "Summary text"`: Add agent results as a note to the created task
+- `--title "Task title"`: Specify a custom task title (otherwise generated from commit)
+- `--type fix|feature|implement`: Specify task type (otherwise inferred from commit message)
+
+#### Examples
+
+1. Create a task from the latest commit:
+   ```bash
+   ./auto-task-creator.sh
+   ```
+
+2. Create a task with a specific commit message and agent summary:
+   ```bash
+   ./auto-task-creator.sh --commit-message "Fix pagination in task list" --agent-summary "Fixed the pagination by adding proper page controls and ensuring current page state is maintained."
+   ```
+
+3. Create a task with a custom title and type:
+   ```bash
+   ./auto-task-creator.sh --title "Implement task sorting feature" --type feature
+   ```
+
+### Integration with Git Hooks
+
+You can automatically create tasks after each commit by adding this script to your post-commit hook.
+
+1. Create or edit `.git/hooks/post-commit`:
+   ```bash
+   #!/bin/bash
+   project_dir="$(git rev-parse --show-toplevel)"
+   "$project_dir/project-management/auto-task-creator.sh"
+   ```
+
+2. Make the hook executable:
+   ```bash
+   chmod +x .git/hooks/post-commit
+   ```
+
+## Task Workflow
+
+The typical workflow for using this automation:
+
+1. Make changes to your code
+2. Commit changes with a descriptive message following conventions:
+   - `fix: description` for bug fixes
+   - `feat: description` for new features
+   - `implement: description` for implementations
+   - Use `[urgent]`, `[critical]`, or `[important]` tags for priority
+   - Use `[ai]` tag for AI-assisted work
+3. The task will be automatically created with appropriate metadata
+4. Agent result summaries can be added manually using the `--agent-summary` option 

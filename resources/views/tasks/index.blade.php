@@ -296,9 +296,15 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            Showing 1 to {{ count($tasks) }} of {{ count($tasks) }} entries
+                            @if(isset($pagination))
+                                Showing {{ ($pagination['current_page']-1) * $pagination['per_page'] + 1 }} to 
+                                {{ min($pagination['current_page'] * $pagination['per_page'], $pagination['total']) }} 
+                                of {{ $pagination['total'] }} entries
+                            @else
+                                Showing 1 to {{ count($tasks) }} of {{ count($tasks) }} entries
+                            @endif
                         </div>
-                        <div class="d-flex">
+                        <div class="d-flex align-items-center">
                             @php
                                 $upcomingTasksFiltered = $upcomingTasks ?? array_filter($tasks, function($t) {
                                     return isset($t['due_date']) && $t['due_date'] && 
@@ -310,11 +316,62 @@
                             <button type="button" class="btn btn-sm btn-outline-info me-2" data-bs-toggle="tooltip" title="Upcoming Tasks (Due in 7 days)">
                                 <i class="fas fa-calendar-day me-1"></i> {{ count($upcomingTasksFiltered) }} Upcoming
                             </button>
-                            <a href="{{ route('tasks.report') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('tasks.report') }}" class="btn btn-sm btn-outline-primary me-2">
                                 <i class="fas fa-chart-bar me-1"></i> Reports
                             </a>
                         </div>
                     </div>
+                    
+                    @if(isset($pagination) && $pagination['total_pages'] > 1)
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav aria-label="Task pagination">
+                            <ul class="pagination">
+                                <li class="page-item {{ $pagination['current_page'] == 1 ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ route('tasks.index', array_merge(request()->except('page'), ['page' => 1])) }}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item {{ $pagination['current_page'] == 1 ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ route('tasks.index', array_merge(request()->except('page'), ['page' => max($pagination['current_page'] - 1, 1)])) }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                
+                                @php
+                                    $start = max(1, $pagination['current_page'] - 2);
+                                    $end = min($pagination['total_pages'], $pagination['current_page'] + 2);
+                                    
+                                    if ($start > 1) {
+                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                                    }
+                                @endphp
+                                
+                                @for($i = $start; $i <= $end; $i++)
+                                    <li class="page-item {{ $pagination['current_page'] == $i ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ route('tasks.index', array_merge(request()->except('page'), ['page' => $i])) }}">{{ $i }}</a>
+                                    </li>
+                                @endfor
+                                
+                                @php
+                                    if ($end < $pagination['total_pages']) {
+                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                                    }
+                                @endphp
+                                
+                                <li class="page-item {{ $pagination['current_page'] == $pagination['total_pages'] ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ route('tasks.index', array_merge(request()->except('page'), ['page' => min($pagination['current_page'] + 1, $pagination['total_pages'])])) }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item {{ $pagination['current_page'] == $pagination['total_pages'] ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ route('tasks.index', array_merge(request()->except('page'), ['page' => $pagination['total_pages']])) }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    @endif
                 </div>
                 @endif
             </div>

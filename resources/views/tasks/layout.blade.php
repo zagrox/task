@@ -220,36 +220,14 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('tasks.ai') ? 'active' : '' }}" href="{{ route('tasks.ai') }}">
-                            <i class="fas fa-robot me-1"></i> AI Tasks
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('tasks.versions') ? 'active' : '' }}" href="{{ route('tasks.versions') }}">
                             <i class="fas fa-code-branch me-1"></i> Versions
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('tasks.report') ? 'active' : '' }}" href="{{ route('tasks.report') }}">
                             <i class="fas fa-chart-bar me-1"></i> Reports
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('tasks.report', ['type' => 'summary']) }}">
-                                    <i class="fas fa-chart-pie me-2 text-primary"></i> Summary Report
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('tasks.report', ['type' => 'overdue']) }}">
-                                    <i class="fas fa-calendar-times me-2 text-danger"></i> Overdue Tasks
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('tasks.report', ['type' => 'progress']) }}">
-                                    <i class="fas fa-tasks me-2 text-success"></i> Progress Report
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center">

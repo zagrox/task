@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Carbon;
+use App\Services\GitHubService;
+use App\Models\GitHubIssue;
 
 class TaskController extends Controller
 {
@@ -115,10 +117,31 @@ class TaskController extends Controller
             });
         }
         
+        // Sort tasks by ID in descending order (newest first)
+        usort($tasks, function($a, $b) {
+            return $b['id'] <=> $a['id'];
+        });
+        
+        // Pagination
+        $page = $request->input('page', 1);
+        $perPage = 20;
+        $totalTasks = count($tasks);
+        $totalPages = ceil($totalTasks / $perPage);
+        $page = max(1, min($page, $totalPages));
+        
+        $offset = ($page - 1) * $perPage;
+        $paginatedTasks = array_slice($tasks, $offset, $perPage);
+        
         return $this->renderTasksView('tasks.index', [
-            'tasks' => array_values($tasks),
+            'tasks' => array_values($paginatedTasks),
             'metadata' => $metadata,
-            'filters' => $filters
+            'filters' => $filters,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalTasks,
+                'total_pages' => $totalPages
+            ]
         ]);
     }
     
@@ -947,5 +970,83 @@ class TaskController extends Controller
                 'error' => 'Failed to process AI tasks: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Sync task to GitHub issue
+     */
+    public function syncToGitHub($id, GitHubService $github)
+    {
+        // Ensure tasks file exists
+        if (!File::exists($this->tasksFile)) {
+            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
+        }
+        
+        // Load tasks
+        $taskData = json_decode(File::get($this->tasksFile), true);
+        
+        // Find the task
+        $task = null;
+        foreach ($taskData['tasks'] as $t) {
+            if ($t['id'] == $id) {
+                $task = $t;
+                break;
+            }
+        }
+        
+        if (!$task) {
+            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
+        }
+        
+        // Set repository from environment if not specified
+        $repository = request('repository') ?: env('GITHUB_REPOSITORY');
+        
+        if (!$repository) {
+            return redirect()->route('tasks.show', $id)->with('error', 'No GitHub repository specified. Please set GITHUB_REPOSITORY in .env or provide it in the request.');
+        }
+        
+        // Create or update GitHub issue
+        $github->setRepository($repository);
+        $githubIssue = $github->syncTaskToGitHub($id);
+        
+        if (!$githubIssue) {
+            return redirect()->route('tasks.show', $id)->with('error', 'Failed to sync task to GitHub.');
+        }
+        
+        return redirect()->route('tasks.show', $id)->with('success', "Task synced to GitHub issue #{$githubIssue->issue_number}");
+    }
+    
+    /**
+     * Webhook endpoint for GitHub issue updates
+     */
+    public function githubWebhook(Request $request, GitHubService $github)
+    {
+        $payload = $request->input();
+        
+        if (empty($payload) || !isset($payload['issue'])) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid payload'], 400);
+        }
+        
+        // Extract repository info
+        $repository = $payload['repository']['full_name'];
+        $issueNumber = $payload['issue']['number'];
+        
+        // Find GitHub issue in our database
+        $githubIssue = GitHubIssue::where('repository', $repository)
+            ->where('issue_number', $issueNumber)
+            ->first();
+            
+        if (!$githubIssue) {
+            return response()->json(['status' => 'error', 'message' => 'GitHub issue not found in our records'], 404);
+        }
+        
+        // Sync the issue data to the task
+        $result = $github->syncGitHubToTask($githubIssue);
+        
+        if (!$result) {
+            return response()->json(['status' => 'error', 'message' => 'Failed to sync GitHub issue to task'], 500);
+        }
+        
+        return response()->json(['status' => 'success', 'message' => 'GitHub issue synced to task']);
     }
 } 

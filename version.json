@@ -62,5 +62,52 @@
     "by_version": {
       "1.0.8": 8
     }
-  }
+  },
+  "backups": [
+    {
+      "version": "0.1.1",
+      "date": "2025-04-18",
+      "path": "backups/v0.1.1/mailzila_v0.1.1.sqlite"
+    },
+    {
+      "version": "1.0.0",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.0/mailzila_v1.0.0.sqlite"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.1/mailzila_v1.0.1.sqlite"
+    },
+    {
+      "version": "1.0.2",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.2/mailzila_v1.0.2.sqlite"
+    },
+    {
+      "version": "1.0.3",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.3/mailzila_v1.0.3.sqlite"
+    },
+    {
+      "version": "1.0.5",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.5/mailzila_v1.0.5.sqlite"
+    },
+    {
+      "version": "1.0.6",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.6/mailzila_v1.0.6.sqlite"
+    },
+    {
+      "version": "1.0.7",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.7/mailzila_v1.0.7.sqlite"
+    },
+    {
+      "version": "1.0.8",
+      "date": "2025-04-18",
+      "path": "backups/v1.0.8/mailzila_v1.0.8.sqlite"
+    }
+  ]
 }

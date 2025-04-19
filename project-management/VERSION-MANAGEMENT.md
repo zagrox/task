@@ -10,6 +10,24 @@ MailZila uses semantic versioning (MAJOR.MINOR.PATCH) according to [SemVer](http
 2. **MINOR** version for new functionality in a backward compatible manner
 3. **PATCH** version for backward compatible bug fixes
 
+## ⚠️ Important Safety Guidelines
+
+1. **Never Downgrade Versions**: 
+   - Downgrading from a higher version (e.g., 1.0.7 to 1.0.0) can cause serious issues
+   - If absolutely necessary, use the `--force` option, but only with extreme caution
+
+2. **Always Confirm Version Changes**:
+   - All version updates will now require explicit confirmation
+   - Major version upgrades will require double confirmation
+
+3. **Backups Are Automatic**:
+   - The version synchronization script now automatically backs up your version.json
+   - Interrupted scripts will restore your original version
+
+4. **Respect Current Production Version**:
+   - Current production version is **1.0.7**
+   - All tools will preserve this version unless explicitly changed
+
 ## Tools Available
 
 The following tools are available for version management:
@@ -17,13 +35,14 @@ The following tools are available for version management:
 ### 1. Laravel Artisan Command
 
 ```bash
-php artisan version:update [type] [--notes="Release notes"] [--no-git]
+php artisan version:update [type] [--notes="Release notes"] [--no-git] [--force]
 ```
 
 Options:
 - `type`: `major`, `minor`, or `patch` (default: `patch`)
 - `--notes`: Release notes for this version
 - `--no-git`: Skip git commit and tag operations
+- `--force`: Force version change even if it would be a downgrade (use with caution!)
 
 ### 2. Shell Script
 
@@ -69,13 +88,14 @@ The version information is stored in `version.json` at the root of the applicati
 {
   "major": 1,
   "minor": 0,
-  "patch": 0,
+  "patch": 7,
   "history": [
     {
-      "version": "1.0.0",
-      "date": "2023-07-01",
-      "notes": "Initial release"
-    }
+      "version": "1.0.7",
+      "date": "2025-04-17",
+      "notes": "Added version management tab"
+    },
+    ...
   ],
   "previous_versions": []
 }
@@ -87,13 +107,30 @@ Version updates are integrated with Git in the following ways:
 
 1. When a version is updated (without `--no-git`):
    - Changes to version.json and config/app.php are committed
-   - A new tag is created with the version number (e.g., v1.0.0)
+   - A new tag is created with the version number (e.g., v1.0.7)
    - The tag can be pushed to the repository
 
 2. The version page shows:
    - Uncommitted changes
    - Unpushed commits
    - Current branch
+
+## Git History Synchronization
+
+For synchronizing version history with Git, use the `version-github-sync.sh` script:
+
+```bash
+./scripts/version-github-sync.sh
+```
+
+This script:
+1. Reconstructs version history in Git from version.json
+2. Creates appropriate tags with annotated messages
+3. Simulates codebase changes for each version
+4. Includes safeguards to prevent accidental version downgrades
+5. Automatically backs up and restores the original version.json
+
+**Note**: This is an advanced operation - use it only when necessary.
 
 ## Best Practices
 

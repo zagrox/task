@@ -20,6 +20,35 @@ function get_laravel_root {
 LARAVEL_ROOT=$(get_laravel_root)
 VERSION_FILE="$LARAVEL_ROOT/version.json"
 VERSION_MANAGER="$LARAVEL_ROOT/project-management/version-manager.sh"
+VERSION_BACKUP="$LARAVEL_ROOT/backups/version.json.bak"
+
+# Safeguard: Create backup of current version.json
+mkdir -p "$LARAVEL_ROOT/backups"
+echo "Creating backup of current version.json file..."
+cp "$VERSION_FILE" "$VERSION_BACKUP"
+echo "✓ Backup created at $VERSION_BACKUP"
+
+# Setup trap to restore version.json if the script is interrupted
+function cleanup {
+    if [ -f "$VERSION_BACKUP" ]; then
+        echo ""
+        echo "Script interrupted or errored. Restoring original version.json..."
+        cp "$VERSION_BACKUP" "$VERSION_FILE"
+        echo "✓ Original version restored"
+        
+        # Also restore app.php if needed
+        if [ -f "$LARAVEL_ROOT/backups/app.php.bak" ]; then
+            cp "$LARAVEL_ROOT/backups/app.php.bak" "$LARAVEL_ROOT/config/app.php"
+            echo "✓ Original app.php restored"
+        fi
+    fi
+}
+
+# Register the cleanup function to be called on script exit, interrupt, or error
+trap cleanup EXIT INT TERM ERR
+
+# Also backup app.php
+cp "$LARAVEL_ROOT/config/app.php" "$LARAVEL_ROOT/backups/app.php.bak"
 
 # Check if we're in a git repository
 if [ ! -d "$LARAVEL_ROOT/.git" ]; then
@@ -62,6 +91,14 @@ readarray() {
 readarray VERSION_ARRAY "$(jq -r '.history[] | .version' "$VERSION_FILE")"
 readarray NOTES_ARRAY "$(jq -r '.history[] | .notes' "$VERSION_FILE")"
 
+# Extract current version numbers
+CURRENT_MAJOR=$(jq -r '.major' "$VERSION_FILE")
+CURRENT_MINOR=$(jq -r '.minor' "$VERSION_FILE")
+CURRENT_PATCH=$(jq -r '.patch' "$VERSION_FILE")
+CURRENT_VERSION="$CURRENT_MAJOR.$CURRENT_MINOR.$CURRENT_PATCH"
+
+echo "Current version is: $CURRENT_VERSION"
+
 # Ensure arrays are in reverse order (oldest first)
 VERSION_REVERSED=()
 NOTES_REVERSED=()
@@ -90,7 +127,9 @@ for i in "${!VERSION_ARRAY[@]}"; do
 done
 
 echo ""
-echo "This process will modify Git history. Make sure you have a backup."
+echo "WARNING: This is an advanced operation that reconstructs Git history."
+echo "Your version.json will be temporarily modified during this process"
+echo "but will be restored to version $CURRENT_VERSION when complete or on error."
 echo "=========================================================="
 echo ""
 
@@ -98,6 +137,9 @@ echo ""
 read -p "Do you want to proceed with this plan? (y/n): " confirm
 if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     echo "Operation canceled"
+    # Clean up backup without restoring (since we didn't modify anything yet)
+    rm -f "$VERSION_BACKUP" "$LARAVEL_ROOT/backups/app.php.bak"
+    trap - EXIT INT TERM ERR  # Clear the trap
     exit 0
 fi
 
@@ -112,6 +154,9 @@ if [[ -n $(git status --porcelain) ]]; then
         git commit -m "Pre-version reconstruction snapshot"
     else
         echo "Please commit or stash your changes manually, then run this script again."
+        # Clean up backup without restoring (since we didn't modify anything yet)
+        rm -f "$VERSION_BACKUP" "$LARAVEL_ROOT/backups/app.php.bak"
+        trap - EXIT INT TERM ERR  # Clear the trap
         exit 1
     fi
 fi
@@ -191,6 +236,26 @@ EOF
     echo "Completed processing version $version"
     echo "----------------------------------------------------------"
 done
+
+# IMPORTANT: After completing all versions, restore the original version.json
+# This is a safeguard in case we didn't process all versions up to the current one
+if [ -f "$VERSION_BACKUP" ]; then
+    # Check if we processed all versions including the current one
+    LAST_PROCESSED="${VERSION_ARRAY[${#VERSION_ARRAY[@]}-1]}"
+    if [ "$LAST_PROCESSED" != "$CURRENT_VERSION" ]; then
+        echo "Restoring original version.json with version $CURRENT_VERSION..."
+        cp "$VERSION_BACKUP" "$VERSION_FILE"
+        # Also update app.php
+        cp "$LARAVEL_ROOT/backups/app.php.bak" "$LARAVEL_ROOT/config/app.php"
+        echo "✓ Original version restored"
+    fi
+    
+    # Remove backup files
+    rm -f "$VERSION_BACKUP" "$LARAVEL_ROOT/backups/app.php.bak"
+fi
+
+# Clear the cleanup trap since we've handled restoration manually
+trap - EXIT INT TERM ERR
 
 echo "Version reconstruction completed successfully!"
 echo "All versions from version.json have been applied to Git history."

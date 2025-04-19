@@ -17,7 +17,8 @@ class UpdateVersion extends Command
     protected $signature = 'version:update 
                            {type=patch : Type of version increment (major, minor, patch)}
                            {--notes= : Release notes for this version}
-                           {--no-git : Skip git commit and tag operations}';
+                           {--no-git : Skip git commit and tag operations}
+                           {--force : Force version update even if it would be a downgrade}';
 
     /**
      * The console command description.
@@ -52,6 +53,7 @@ class UpdateVersion extends Command
         $type = $this->argument('type');
         $notes = $this->option('notes');
         $skipGit = $this->option('no-git');
+        $force = $this->option('force');
 
         if (!in_array($type, ['major', 'minor', 'patch'])) {
             $this->error("Invalid version type. Must be one of: major, minor, patch");
@@ -63,6 +65,10 @@ class UpdateVersion extends Command
         $oldVersion = "{$versionData['major']}.{$versionData['minor']}.{$versionData['patch']}";
         
         // Update version number
+        $originalMajor = $versionData['major'];
+        $originalMinor = $versionData['minor'];
+        $originalPatch = $versionData['patch'];
+        
         switch ($type) {
             case 'major':
                 $versionData['major']++;
@@ -81,9 +87,25 @@ class UpdateVersion extends Command
         // Get new version string
         $newVersion = "{$versionData['major']}.{$versionData['minor']}.{$versionData['patch']}";
         
+        // Safety check: Prevent version downgrade
+        if (!$force && version_compare($newVersion, $oldVersion, '<')) {
+            $this->error("Error: New version ($newVersion) would be a downgrade from current version ($oldVersion)");
+            $this->line("If you're sure you want to downgrade, use the --force option");
+            return 1;
+        }
+        
         // Prompt for release notes if not provided
         if (empty($notes)) {
             $notes = $this->ask("Enter release notes for version $newVersion:");
+        }
+        
+        // Double-confirm major or potentially disruptive changes
+        if ($type === 'major' || ($force && version_compare($newVersion, $oldVersion, '<'))) {
+            $confirmed = $this->confirm("WARNING: You are about to perform a $type version change from $oldVersion to $newVersion. Are you sure?");
+            if (!$confirmed) {
+                $this->info("Version update cancelled");
+                return 0;
+            }
         }
         
         // Add to history
