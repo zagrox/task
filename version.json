@@ -1,7 +1,7 @@
 {
   "major": 1,
   "minor": 0,
-  "patch": 8,
+  "patch": 9,
   "history": [
     {
       "version": "1.0.7",
@@ -47,6 +47,11 @@
       "version": "1.0.8",
       "date": "2025-04-18",
       "notes": "Implemented task sorting by newest first and added pagination with 20 tasks per page"
+    },
+    {
+      "version": "1.0.9",
+      "date": "2025-04-20",
+      "notes": "Integrated GitHub issue tracking with complete task synchronization"
     }
   ],
   "previous_versions": [
@@ -57,10 +62,12 @@
   ],
   "indexes": {
     "by_date": {
-      "2025-04-18": 8
+      "2025-04-18": 8,
+      "2025-04-20": 9
     },
     "by_version": {
-      "1.0.8": 8
+      "1.0.8": 8,
+      "1.0.9": 9
     }
   },
   "backups": [
