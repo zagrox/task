@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         // ... existing commands
         Commands\Tasks\GenerateAiTasks::class,
         Commands\UpdateVersion::class,
+        Commands\SyncTasksToGitHub::class,
     ];
 
     /**
@@ -48,6 +49,12 @@ class Kernel extends ConsoleKernel
                  ->firstMonday()
                  ->at('09:00')
                  ->appendOutputTo(storage_path('logs/version-updates.log'));
+
+        // Sync tasks to GitHub daily at midnight
+        $schedule->command('tasks:sync-to-github --all')
+                 ->daily()
+                 ->at('00:00')
+                 ->appendOutputTo(storage_path('logs/github-sync.log'));
     }
 
     /**

@@ -1,110 +1,98 @@
 #!/bin/bash
 # scripts/fix-backups.sh
-# Purpose: Fix missing database backups in version directories
+# Purpose: Fix missing database backups by copying from the previous version
 
-set -e
-
-# Configuration
+# Set variables
 VERSION_FILE="version.json"
-DB_FILE="database/database.sqlite"
+BACKUP_DIR="backups"
 
-# Check if required files exist
-if [ ! -f "$VERSION_FILE" ]; then
-  echo "Error: version.json not found"
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+  echo "Error: jq is required for this script to work."
+  echo "Install jq with: brew install jq"
   exit 1
 fi
 
-if [ ! -f "$DB_FILE" ]; then
-  echo "Error: Database file not found at $DB_FILE"
-  exit 1
-fi
+# Get the current version
+CURRENT_VERSION=$(jq -r '"\(.major).\(.minor).\(.patch)"' "$VERSION_FILE")
+echo "Current version: $CURRENT_VERSION"
 
-# Function to create a backup for a specific version
-create_backup_for_version() {
-  local version=$1
-  local backup_dir="backups/v$version"
-  local backup_file="$backup_dir/mailzila_v${version}.sqlite"
-  
-  echo "Checking backup for version $version..."
-  
-  # Create backup directory if it doesn't exist
-  mkdir -p "$backup_dir"
-  
-  # Check if backup file already exists
-  if [ -f "$backup_file" ]; then
-    echo "✅ Backup already exists for v$version"
-    return 0
-  fi
-  
-  echo "Creating backup for v$version..."
-  
-  # Copy the current database to the backup location
-  cp "$DB_FILE" "$backup_file"
-  
-  if [ $? -eq 0 ]; then
-    echo "✅ Created database backup for v$version"
-    # Add backup info to version.json if using jq
-    if command -v jq &> /dev/null; then
-      if ! jq -e '.backups' "$VERSION_FILE" > /dev/null 2>&1; then
-        # Add backups array if it doesn't exist
-        jq '. + {backups:[]}' "$VERSION_FILE" > "${VERSION_FILE}.tmp" && mv "${VERSION_FILE}.tmp" "$VERSION_FILE"
+# Get all backup versions from backups array in version.json
+BACKED_UP_VERSIONS=$(jq -r '.backups[].version' "$VERSION_FILE")
+echo "Versions with backups in version.json:"
+echo "$BACKED_UP_VERSIONS"
+
+# Get all version history entries
+ALL_VERSIONS=$(jq -r '.history[].version' "$VERSION_FILE")
+echo -e "\nAll versions in history:"
+echo "$ALL_VERSIONS"
+
+# Find missing backups
+echo -e "\nChecking for missing backups..."
+MISSING_BACKUPS=()
+for version in $ALL_VERSIONS; do
+  if ! echo "$BACKED_UP_VERSIONS" | grep -q "$version"; then
+    # Check if backup directory exists but is empty
+    if [ -d "$BACKUP_DIR/v$version" ]; then
+      if [ -z "$(ls -A "$BACKUP_DIR/v$version")" ]; then
+        echo "Empty backup directory found for v$version"
+        MISSING_BACKUPS+=("$version")
       fi
-      
-      # Add backup entry if it doesn't exist already
-      if ! jq -e ".backups[] | select(.version == \"$version\")" "$VERSION_FILE" > /dev/null 2>&1; then
-        jq --arg version "$version" \
-           --arg date "$(date +"%Y-%m-%d")" \
-           --arg path "$backup_file" \
-           '.backups += [{version: $version, date: $date, path: $path}]' "$VERSION_FILE" > "${VERSION_FILE}.tmp" && \
-           mv "${VERSION_FILE}.tmp" "$VERSION_FILE"
-        echo "✅ Updated version.json with backup information"
-      fi
+    else
+      echo "No backup directory found for v$version"
+      MISSING_BACKUPS+=("$version")
     fi
-    return 0
-  else
-    echo "❌ Failed to create backup for v$version"
-    return 1
   fi
-}
-
-# Get all version tags from Git
-echo "Checking Git tags for versions..."
-git_versions=$(git tag --list "v*" | sort -V)
-
-# Get all versions from the version.json file
-echo "Checking version.json for version history..."
-if command -v jq &> /dev/null; then
-  json_versions=$(jq -r '.history[].version' "$VERSION_FILE" | sort -V)
-else
-  # Fallback if jq is not available
-  json_versions=$(grep -o '"version": "[^"]*"' "$VERSION_FILE" | cut -d'"' -f4 | sort -V)
-fi
-
-# Get existing backup directories
-echo "Checking existing backup directories..."
-backup_dirs=$(find backups -type d -name "v*" | sed 's/backups\/v//g' | sort -V)
-
-# Combine all unique versions
-all_versions=$(printf "%s\n%s\n%s\n" "$git_versions" "$json_versions" "$backup_dirs" | sed 's/^v//g' | sort -V | uniq)
-
-# Create backups for each version
-echo "Checking backups for all versions..."
-for version in $all_versions; do
-  create_backup_for_version "$version"
 done
 
-# Fix empty backup directories
-echo "Checking for empty backup directories..."
-empty_dirs=$(find backups -type d -name "v*" -empty | sort)
-if [ -n "$empty_dirs" ]; then
-  echo "Found empty backup directories:"
-  for dir in $empty_dirs; do
-    version=$(echo "$dir" | sed 's/backups\/v//g')
-    echo "  - $dir (v$version)"
-    create_backup_for_version "$version"
-  done
-else
-  echo "No empty backup directories found."
+# Fix missing backups
+if [ ${#MISSING_BACKUPS[@]} -eq 0 ]; then
+  echo "No missing backups found. All versions have backups."
+  exit 0
 fi
 
-echo "✅ Backup check and fix completed. All versions should now have database backups." 
+echo -e "\nFixing missing backups..."
+for missing_version in "${MISSING_BACKUPS[@]}"; do
+  echo "Fixing backup for v$missing_version..."
+  
+  # Find the closest previous version with a backup
+  PREV_VERSION=""
+  for version in $BACKED_UP_VERSIONS; do
+    if [ "$(printf "%s\n%s" "$version" "$missing_version" | sort -V | head -n1)" = "$version" ] && [ "$version" != "$missing_version" ]; then
+      PREV_VERSION="$version"
+    fi
+  done
+  
+  if [ -z "$PREV_VERSION" ]; then
+    echo "No previous version with backup found for v$missing_version, skipping..."
+    continue
+  fi
+  
+  echo "Using backup from v$PREV_VERSION as base..."
+  
+  # Create backup directory if it doesn't exist
+  mkdir -p "$BACKUP_DIR/v$missing_version"
+  
+  # Copy backup file from previous version
+  SOURCE_BACKUP_FILE=$(jq -r --arg ver "$PREV_VERSION" '.backups[] | select(.version == $ver) | .path' "$VERSION_FILE")
+  TARGET_BACKUP_FILE="$BACKUP_DIR/v$missing_version/mailzila_v$missing_version.sqlite"
+  
+  if [ -f "$SOURCE_BACKUP_FILE" ]; then
+    cp "$SOURCE_BACKUP_FILE" "$TARGET_BACKUP_FILE"
+    echo "✅ Copied backup from $SOURCE_BACKUP_FILE to $TARGET_BACKUP_FILE"
+    
+    # Add backup entry to version.json
+    TODAY=$(date +"%Y-%m-%d")
+    jq --arg version "$missing_version" \
+       --arg date "$TODAY" \
+       --arg path "$TARGET_BACKUP_FILE" \
+       '.backups += [{version: $version, date: $date, path: $path}]' "$VERSION_FILE" > "${VERSION_FILE}.tmp" && \
+       mv "${VERSION_FILE}.tmp" "$VERSION_FILE"
+    
+    echo "✅ Added backup entry to version.json for v$missing_version"
+  else
+    echo "❌ Source backup file $SOURCE_BACKUP_FILE not found"
+  fi
+done
+
+echo -e "\nBackup fix complete!" 

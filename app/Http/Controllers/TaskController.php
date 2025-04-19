@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Carbon;
 use App\Services\GitHubService;
 use App\Models\GitHubIssue;
+use Illuminate\Support\Facades\Artisan;
 
 class TaskController extends Controller
 {
@@ -40,18 +41,33 @@ class TaskController extends Controller
     /**
      * Display a listing of the tasks
      */
-    public function index(Request $request)
+    public function index(Request $request, GitHubService $github)
     {
-        $filters = [
-            'status' => $request->input('status'),
-            'assignee' => $request->input('assignee'),
-            'priority' => $request->input('priority'),
-            'feature' => $request->input('feature'),
-            'phase' => $request->input('phase'),
-            'search' => $request->input('search'),
-            'tag' => $request->input('tag'),
-            'version' => $request->input('version'),
-        ];
+        // Initialize filters from the request
+        $status = $request->input('status');
+        $assignee = $request->input('assignee');
+        $priority = $request->input('priority');
+        $feature = $request->input('feature');
+        $phase = $request->input('phase');
+        $search = $request->input('search');
+        $tag = $request->input('tag');
+        $version = $request->input('version');
+        
+        // Handle GitHub sync request if needed
+        if ($request->has('sync_to_github')) {
+            $statusToSync = $request->query('sync_to_github', 'pending');
+            
+            // Run sync in the background
+            $exitCode = Artisan::call('tasks:sync-to-github', [
+                '--status' => $statusToSync
+            ]);
+            
+            if ($exitCode === 0) {
+                return redirect()->route('tasks.index')->with('success', "Tasks with status '{$statusToSync}' have been synced to GitHub!");
+            } else {
+                return redirect()->route('tasks.index')->with('error', 'Failed to sync tasks to GitHub. Check the logs for details.');
+            }
+        }
         
         // Ensure tasks file exists
         if (!File::exists($this->tasksFile)) {
@@ -64,46 +80,46 @@ class TaskController extends Controller
         $tasks = $taskData['tasks'] ?? [];
         
         // Apply filters
-        if ($filters['status']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return $task['status'] === $filters['status'];
+        if ($status) {
+            $tasks = array_filter($tasks, function($task) use ($status) {
+                return $task['status'] === $status;
             });
         }
         
-        if ($filters['assignee']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return $task['assignee'] === $filters['assignee'];
+        if ($assignee) {
+            $tasks = array_filter($tasks, function($task) use ($assignee) {
+                return $task['assignee'] === $assignee;
             });
         }
         
-        if ($filters['priority']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return $task['priority'] === $filters['priority'];
+        if ($priority) {
+            $tasks = array_filter($tasks, function($task) use ($priority) {
+                return $task['priority'] === $priority;
             });
         }
         
-        if ($filters['feature']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return $task['related_feature'] === $filters['feature'];
+        if ($feature) {
+            $tasks = array_filter($tasks, function($task) use ($feature) {
+                return $task['related_feature'] === $feature;
             });
         }
         
-        if ($filters['phase']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return $task['related_phase'] === $filters['phase'];
+        if ($phase) {
+            $tasks = array_filter($tasks, function($task) use ($phase) {
+                return $task['related_phase'] === $phase;
             });
         }
         
-        if ($filters['search']) {
-            $searchTerm = strtolower($filters['search']);
+        if ($search) {
+            $searchTerm = strtolower($search);
             $tasks = array_filter($tasks, function($task) use ($searchTerm) {
                 return strpos(strtolower($task['title']), $searchTerm) !== false 
                     || strpos(strtolower($task['description']), $searchTerm) !== false;
             });
         }
         
-        if ($filters['tag']) {
-            $tagSearch = strtolower($filters['tag']);
+        if ($tag) {
+            $tagSearch = strtolower($tag);
             $tasks = array_filter($tasks, function($task) use ($tagSearch) {
                 if (empty($task['tags'])) return false;
                 $tags = array_map('trim', explode(',', strtolower($task['tags'])));
@@ -111,9 +127,9 @@ class TaskController extends Controller
             });
         }
         
-        if ($filters['version']) {
-            $tasks = array_filter($tasks, function($task) use ($filters) {
-                return isset($task['version']) && $task['version'] === $filters['version'];
+        if ($version) {
+            $tasks = array_filter($tasks, function($task) use ($version) {
+                return isset($task['version']) && $task['version'] === $version;
             });
         }
         
@@ -135,7 +151,16 @@ class TaskController extends Controller
         return $this->renderTasksView('tasks.index', [
             'tasks' => array_values($paginatedTasks),
             'metadata' => $metadata,
-            'filters' => $filters,
+            'filters' => [
+                'status' => $status,
+                'assignee' => $assignee,
+                'priority' => $priority,
+                'feature' => $feature,
+                'phase' => $phase,
+                'search' => $search,
+                'tag' => $tag,
+                'version' => $version,
+            ],
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $perPage,

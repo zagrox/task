@@ -16,6 +16,9 @@
             <a href="{{ route('tasks.report') }}" class="btn btn-outline-primary ms-2">
                 <i class="fas fa-chart-bar me-1"></i> Reports
             </a>
+            <a href="{{ route('tasks.index') }}?sync_to_github=pending" class="btn btn-dark ms-2">
+                <i class="fab fa-github me-1"></i> Sync to GitHub
+            </a>
         </div>
     </div>
 
