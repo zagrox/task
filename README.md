@@ -1,10 +1,10 @@
-# MailZila
+# Task Manager
 
-A mail management application.
+A task management application.
 
 ## Description
 
-MailZila is a project focused on providing mail management services.
+ZAGROX is a project focused on providing digital services.
 
 ## Getting Started
 
