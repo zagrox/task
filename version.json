@@ -1,125 +1,131 @@
 {
-  "major": 1,
-  "minor": 0,
-  "patch": 9,
-  "history": [
-    {
-      "version": "1.0.7",
-      "date": "2025-04-17",
-      "notes": "Added version management tab to task dashboard with Git status tracking and repository push functionality"
+    "major": 1,
+    "minor": 1,
+    "patch": 0,
+    "history": [
+        {
+            "version": "1.1.0",
+            "date": "2025-04-21",
+            "notes": "Improved task report page with enhanced chart functionality and fixed reporting issues"
+        },
+        {
+            "version": "1.0.7",
+            "date": "2025-04-17",
+            "notes": "Added version management tab to task dashboard with Git status tracking and repository push functionality"
+        },
+        {
+            "version": "1.0.6",
+            "date": "2025-04-18",
+            "notes": "Fixed render issues on task dashboard and property access issues with tasks array"
+        },
+        {
+            "version": "1.0.5",
+            "date": "2025-04-16",
+            "notes": "Added task management system with rollback functionality and fixed 404 errors"
+        },
+        {
+            "version": "1.0.4",
+            "date": "2025-03-10",
+            "notes": "Implemented task filtering and improved task reports"
+        },
+        {
+            "version": "1.0.3",
+            "date": "2025-01-28",
+            "notes": "Added task export functionality and improved task edit interface"
+        },
+        {
+            "version": "1.0.2",
+            "date": "2024-12-10",
+            "notes": "Improved Git integration and added task metrics on dashboard"
+        },
+        {
+            "version": "1.0.1",
+            "date": "2024-11-05",
+            "notes": "Fixed several UI bugs and improved task creation workflow"
+        },
+        {
+            "version": "1.0.0",
+            "date": "2023-08-15",
+            "notes": "Initial release of Task Manager"
+        },
+        {
+            "version": "1.0.8",
+            "date": "2025-04-18",
+            "notes": "Implemented task sorting by newest first and added pagination with 20 tasks per page"
+        },
+        {
+            "version": "1.0.9",
+            "date": "2025-04-20",
+            "notes": "Integrated GitHub issue tracking with complete task synchronization"
+        }
+    ],
+    "previous_versions": [
+        "1.0.9",
+        "0.9.5",
+        "0.9.0",
+        "0.8.5",
+        "0.8.0"
+    ],
+    "indexes": {
+        "by_date": {
+            "2025-04-18": 8,
+            "2025-04-20": 9
+        },
+        "by_version": {
+            "1.0.8": 8,
+            "1.0.9": 9
+        }
     },
-    {
-      "version": "1.0.6",
-      "date": "2025-04-18",
-      "notes": "Fixed render issues on task dashboard and property access issues with tasks array"
-    },
-    {
-      "version": "1.0.5",
-      "date": "2025-04-16",
-      "notes": "Added task management system with rollback functionality and fixed 404 errors"
-    },
-    {
-      "version": "1.0.4",
-      "date": "2025-03-10",
-      "notes": "Implemented task filtering and improved task reports"
-    },
-    {
-      "version": "1.0.3",
-      "date": "2025-01-28",
-      "notes": "Added task export functionality and improved task edit interface"
-    },
-    {
-      "version": "1.0.2",
-      "date": "2024-12-10",
-      "notes": "Improved Git integration and added task metrics on dashboard"
-    },
-    {
-      "version": "1.0.1",
-      "date": "2024-11-05",
-      "notes": "Fixed several UI bugs and improved task creation workflow"
-    },
-    {
-      "version": "1.0.0",
-      "date": "2023-08-15",
-      "notes": "Initial release of Task Manager"
-    },
-    {
-      "version": "1.0.8",
-      "date": "2025-04-18",
-      "notes": "Implemented task sorting by newest first and added pagination with 20 tasks per page"
-    },
-    {
-      "version": "1.0.9",
-      "date": "2025-04-20",
-      "notes": "Integrated GitHub issue tracking with complete task synchronization"
-    }
-  ],
-  "previous_versions": [
-    "0.9.5",
-    "0.9.0",
-    "0.8.5",
-    "0.8.0"
-  ],
-  "indexes": {
-    "by_date": {
-      "2025-04-18": 8,
-      "2025-04-20": 9
-    },
-    "by_version": {
-      "1.0.8": 8,
-      "1.0.9": 9
-    }
-  },
-  "backups": [
-    {
-      "version": "0.1.1",
-      "date": "2025-04-18",
-      "path": "backups/v0.1.1/task_v0.1.1.sqlite"
-    },
-    {
-      "version": "1.0.0",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.0/task_v1.0.0.sqlite"
-    },
-    {
-      "version": "1.0.1",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.1/task_v1.0.1.sqlite"
-    },
-    {
-      "version": "1.0.2",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.2/task_v1.0.2.sqlite"
-    },
-    {
-      "version": "1.0.3",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.3/task_v1.0.3.sqlite"
-    },
-    {
-      "version": "1.0.5",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.5/task_v1.0.5.sqlite"
-    },
-    {
-      "version": "1.0.6",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.6/task_v1.0.6.sqlite"
-    },
-    {
-      "version": "1.0.7",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.7/task_v1.0.7.sqlite"
-    },
-    {
-      "version": "1.0.8",
-      "date": "2025-04-18",
-      "path": "backups/v1.0.8/task_v1.0.8.sqlite"
-    },
-    {
-      "version": "1.0.9",
-      "date": "2025-04-20",
-      "path": "backups/v1.0.9/task_v1.0.9.sqlite"
-    }
-  ]
+    "backups": [
+        {
+            "version": "0.1.1",
+            "date": "2025-04-18",
+            "path": "backups/v0.1.1/task_v0.1.1.sqlite"
+        },
+        {
+            "version": "1.0.0",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.0/task_v1.0.0.sqlite"
+        },
+        {
+            "version": "1.0.1",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.1/task_v1.0.1.sqlite"
+        },
+        {
+            "version": "1.0.2",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.2/task_v1.0.2.sqlite"
+        },
+        {
+            "version": "1.0.3",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.3/task_v1.0.3.sqlite"
+        },
+        {
+            "version": "1.0.5",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.5/task_v1.0.5.sqlite"
+        },
+        {
+            "version": "1.0.6",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.6/task_v1.0.6.sqlite"
+        },
+        {
+            "version": "1.0.7",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.7/task_v1.0.7.sqlite"
+        },
+        {
+            "version": "1.0.8",
+            "date": "2025-04-18",
+            "path": "backups/v1.0.8/task_v1.0.8.sqlite"
+        },
+        {
+            "version": "1.0.9",
+            "date": "2025-04-20",
+            "path": "backups/v1.0.9/task_v1.0.9.sqlite"
+        }
+    ]
 }

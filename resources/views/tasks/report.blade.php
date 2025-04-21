@@ -12,18 +12,18 @@
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="metrics-card bg-primary text-white">
-                <h3>{{ $metadata['total_tasks'] ?? 0 }}</h3>
+                <h3>{{ $stats['total'] ?? 0 }}</h3>
                 <p>Total Tasks</p>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metrics-card bg-success text-white">
-                <h3>{{ $metadata['completed_tasks'] ?? 0 }}</h3>
+                <h3>{{ $stats['completed'] ?? 0 }}</h3>
                 <p>Completed</p>
                 <div class="progress bg-light">
                     @php
-                    $completion = $metadata['total_tasks'] > 0 
-                        ? round(($metadata['completed_tasks'] / $metadata['total_tasks']) * 100) 
+                    $completion = $stats['total'] > 0 
+                        ? round(($stats['completed'] / $stats['total']) * 100) 
                         : 0;
                     @endphp
                     <div class="progress-bar bg-white" role="progressbar" style="width: {{ $completion }}%;" 
@@ -35,13 +35,13 @@
         </div>
         <div class="col-md-3">
             <div class="metrics-card bg-info text-white">
-                <h3>{{ $metadata['user_tasks'] ?? 0 }}</h3>
+                <h3>{{ $stats['user'] ?? 0 }}</h3>
                 <p>User Tasks</p>
             </div>
         </div>
         <div class="col-md-3">
             <div class="metrics-card bg-warning text-white">
-                <h3>{{ $metadata['ai_tasks'] ?? 0 }}</h3>
+                <h3>{{ $stats['ai'] ?? 0 }}</h3>
                 <p>AI Tasks</p>
             </div>
         </div>

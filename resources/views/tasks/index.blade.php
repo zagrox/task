@@ -159,32 +159,32 @@
                             <tbody>
                                 @forelse($tasks as $task)
                                 <tr>
-                                    <td class="ps-3">{{ $task->id }}</td>
+                                    <td class="ps-3">{{ $task['id'] }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="task-icon me-2">
-                                                @if($task->status === 'completed')
+                                                @if($task['status'] === 'completed')
                                                     <i class="fas fa-check-circle text-success"></i>
-                                                @elseif($task->status === 'in-progress')
+                                                @elseif($task['status'] === 'in-progress')
                                                     <i class="fas fa-spinner text-info"></i>
-                                                @elseif($task->status === 'blocked')
+                                                @elseif($task['status'] === 'blocked')
                                                     <i class="fas fa-ban text-danger"></i>
-                                                @elseif($task->status === 'review')
+                                                @elseif($task['status'] === 'review')
                                                     <i class="fas fa-search text-primary"></i>
                                                 @else
                                                     <i class="fas fa-circle text-secondary"></i>
                                                 @endif
                                             </div>
                                             <div>
-                                                <a href="{{ route('tasks.show', $task->id) }}" class="fw-medium text-dark">
-                                                    {{ $task->title }}
+                                                <a href="{{ route('tasks.show', $task['id']) }}" class="fw-medium text-dark">
+                                                    {{ $task['title'] }}
                                                 </a>
-                                                @if(isset($task->version) && $task->version)
-                                                    <span class="badge bg-secondary ms-1">v{{ $task->version }}</span>
+                                                @if(isset($task['version']) && $task['version'])
+                                                    <span class="badge bg-secondary ms-1">v{{ $task['version'] }}</span>
                                                 @endif
                                                 <div class="small text-muted">
-                                                    @if(isset($task->related_feature) && $task->related_feature)
-                                                        <span class="text-muted">{{ $task->related_feature }}</span>
+                                                    @if(isset($task['related_feature']) && $task['related_feature'])
+                                                        <span class="text-muted">{{ $task['related_feature'] }}</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -192,99 +192,62 @@
                                     </td>
                                     <td>
                                         <span class="badge 
-                                            @if($task->status == 'completed') bg-success 
-                                            @elseif($task->status == 'in-progress') bg-info 
-                                            @elseif($task->status == 'blocked') bg-danger
-                                            @elseif($task->status == 'review') bg-primary
+                                            @if($task['status'] == 'completed') bg-success 
+                                            @elseif($task['status'] == 'in-progress') bg-info 
+                                            @elseif($task['status'] == 'blocked') bg-danger
+                                            @elseif($task['status'] == 'review') bg-primary
                                             @else bg-secondary @endif">
-                                            {{ ucfirst($task->status) }}
+                                            {{ ucfirst($task['status']) }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="badge 
-                                            @if($task->priority == 'high') bg-danger 
-                                            @elseif($task->priority == 'medium') bg-warning text-dark
+                                            @if($task['priority'] == 'high') bg-danger 
+                                            @elseif($task['priority'] == 'medium') bg-warning 
+                                            @elseif($task['priority'] == 'critical') bg-dark
                                             @else bg-info @endif">
-                                            {{ ucfirst($task->priority) }}
+                                            {{ ucfirst($task['priority']) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge @if($task->assignee == 'ai') bg-purple @else bg-primary @endif">
-                                            {{ ucfirst($task->assignee) }}
+                                        <span class="badge @if($task['assignee'] == 'ai') bg-purple @else bg-primary @endif">
+                                            {{ ucfirst($task['assignee']) }}
                                         </span>
                                     </td>
                                     <td>
-                                        @if(isset($task->due_date) && $task->due_date)
-                                            <span class="
-                                                @if($task->due_date->isPast() && $task->status != 'completed') 
-                                                    text-danger fw-bold
-                                                @elseif($task->due_date->isToday()) 
-                                                    text-warning fw-bold
-                                                @endif
-                                            ">
-                                                {{ $task->due_date->format('M d, Y') }}
+                                        @if(isset($task['due_date']) && $task['due_date'])
+                                            <span class="@if(strtotime($task['due_date']) < strtotime('today') && $task['status'] != 'completed') text-danger @endif">
+                                                {{ \Carbon\Carbon::parse($task['due_date'])->format('M d, Y') }}
                                             </span>
                                         @else
-                                            <span class="text-muted">—</span>
+                                            <span class="text-muted">Not set</span>
                                         @endif
                                     </td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group">
-                                            <a href="{{ route('tasks.show', $task->id) }}" 
-                                               class="btn btn-sm btn-outline-primary" 
-                                               data-bs-toggle="tooltip" 
-                                               title="View Task">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('tasks.edit', $task->id) }}" 
-                                               class="btn btn-sm btn-outline-secondary"
-                                               data-bs-toggle="tooltip" 
-                                               title="Edit Task">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#deleteTaskModal{{ $task->id }}"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Delete Task">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Delete Modal -->
-                                        <div class="modal fade" id="deleteTaskModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Delete Task</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Are you sure you want to delete the task: <strong>{{ $task->title }}</strong>?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <a href="{{ route('tasks.show', $task['id']) }}" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('tasks.edit', $task['id']) }}" class="btn btn-sm btn-outline-info me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteTaskModal" 
+                                            data-task-id="{{ $task['id'] }}"
+                                            data-task-title="{{ $task['title'] }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
                                     <td colspan="7" class="text-center py-4">
-                                        <div class="empty-state">
-                                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                                            <h5>No tasks found</h5>
-                                            <p class="text-muted">There are no tasks that match your criteria.</p>
-                                            <a href="{{ route('tasks.create') }}" class="btn btn-primary mt-2">
-                                                <i class="fas fa-plus-circle me-1"></i> Create New Task
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                                            <h5 class="text-muted">No tasks found</h5>
+                                            <p class="text-muted mb-3">Get started by creating your first task</p>
+                                            <a href="{{ route('tasks.create') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus-circle me-1"></i> New Task
                                             </a>
                                         </div>
                                     </td>
