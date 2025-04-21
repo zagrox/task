@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\VersionController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,3 +42,8 @@ Route::post('/tasks-versions/push', [VersionController::class, 'pushToRepository
 // GitHub integration routes
 Route::get('/tasks/{id}/sync-to-github', [App\Http\Controllers\TaskController::class, 'syncToGitHub'])->name('tasks.sync-to-github');
 Route::post('/api/github/webhook', [App\Http\Controllers\TaskController::class, 'githubWebhook'])->name('github.webhook');
+
+// User settings routes
+Route::get('/user/settings', [UserController::class, 'settings'])->name('user.settings');
+Route::post('/user/settings', [UserController::class, 'updateSettings'])->name('user.update-settings');
+Route::post('/user/password', [UserController::class, 'updatePassword'])->name('user.update-password');

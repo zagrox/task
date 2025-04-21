@@ -1,4 +1,4 @@
-# MailZila Version-Git Synchronization Strategy
+# Task Version-Git Synchronization Strategy
 
 This document outlines our approach to synchronizing version history between our version management system and Git.
 

@@ -1,12 +1,12 @@
-# MailZila GitHub Integration: Quick Start Guide
+# Task GitHub Integration: Quick Start Guide
 
-This guide will help you quickly set up and start using the GitHub integration with your MailZila Task Manager.
+This guide will help you quickly set up and start using the GitHub integration with your Task Manager.
 
 ## Setup (One-time)
 
 1. Edit your `.env` file and add these lines:
    ```
-   GITHUB_REPOSITORY="yourusername/mailzila"
+   GITHUB_REPOSITORY="zagrox/task"
    GITHUB_ACCESS_TOKEN="your_personal_access_token"
    ```
 

@@ -75,7 +75,7 @@ for missing_version in "${MISSING_BACKUPS[@]}"; do
   
   # Copy backup file from previous version
   SOURCE_BACKUP_FILE=$(jq -r --arg ver "$PREV_VERSION" '.backups[] | select(.version == $ver) | .path' "$VERSION_FILE")
-  TARGET_BACKUP_FILE="$BACKUP_DIR/v$missing_version/mailzila_v$missing_version.sqlite"
+  TARGET_BACKUP_FILE="$BACKUP_DIR/v$missing_version/task_v$missing_version.sqlite"
   
   if [ -f "$SOURCE_BACKUP_FILE" ]; then
     cp "$SOURCE_BACKUP_FILE" "$TARGET_BACKUP_FILE"

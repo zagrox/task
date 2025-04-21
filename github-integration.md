@@ -1,6 +1,6 @@
-# GitHub Integration for MailZila Task Manager
+# GitHub Integration for Task Manager
 
-This document explains how to set up GitHub integration for the MailZila task manager to synchronize tasks with GitHub issues.
+This document explains how to set up GitHub integration for the Task manager to synchronize tasks with GitHub issues.
 
 ## Configuration
 
@@ -12,7 +12,7 @@ GITHUB_ACCESS_TOKEN="your_personal_access_token"
 ```
 
 Replace:
-- `yourusername/yourrepo` with your actual GitHub repository (e.g., `mailzila/task-manager`)
+- `yourusername/yourrepo` with your actual GitHub repository (e.g., `task/task-manager`)
 - `your_personal_access_token` with a GitHub personal access token
 
 ## Creating a GitHub Personal Access Token
@@ -20,7 +20,7 @@ Replace:
 1. Go to your GitHub account settings
 2. Navigate to "Developer settings" > "Personal access tokens" > "Tokens (classic)"
 3. Click "Generate new token"
-4. Give your token a descriptive name (e.g., "MailZila Task Manager")
+4. Give your token a descriptive name (e.g., "Task Manager")
 5. Select the following scopes:
    - `repo` (Full control of private repositories)
    - `workflow` (if you plan to use GitHub Actions)

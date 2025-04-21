@@ -64,10 +64,10 @@ echo "Detected database connection: $DB_CONNECTION"
 # Look for database backup based on connection type
 BACKUP_DIR="backups/v$TARGET_VERSION"
 if [ "$DB_CONNECTION" == "sqlite" ]; then
-  BACKUP_FILE="$BACKUP_DIR/mailzila_v${TARGET_VERSION}.sqlite"
+  BACKUP_FILE="$BACKUP_DIR/task_v${TARGET_VERSION}.sqlite"
   SQLITE_DB_PATH="database/database.sqlite"
 else
-  BACKUP_FILE="$BACKUP_DIR/mailzila_v${TARGET_VERSION}.sql"
+  BACKUP_FILE="$BACKUP_DIR/task_v${TARGET_VERSION}.sql"
 fi
 
 if [ -d "$BACKUP_DIR" ] && [ -f "$BACKUP_FILE" ]; then
@@ -117,7 +117,7 @@ mkdir -p "$CURRENT_BACKUP_DIR"
 if [ "$DB_CONNECTION" == "sqlite" ]; then
   # SQLite backup
   if [ -f "$SQLITE_DB_PATH" ]; then
-    cp "$SQLITE_DB_PATH" "$CURRENT_BACKUP_DIR/mailzila_v${CURRENT_VERSION}_pre_rollback.sqlite"
+    cp "$SQLITE_DB_PATH" "$CURRENT_BACKUP_DIR/task_v${CURRENT_VERSION}_pre_rollback.sqlite"
     echo "Current SQLite database backed up."
   else
     echo "Warning: SQLite database not found at $SQLITE_DB_PATH"
@@ -125,7 +125,7 @@ if [ "$DB_CONNECTION" == "sqlite" ]; then
 else
   # MySQL/PostgreSQL backup
   if command -v php &> /dev/null && [ -f "artisan" ]; then
-    php artisan db:dump --database="$CURRENT_BACKUP_DIR/mailzila_v${CURRENT_VERSION}_pre_rollback.sql" 2>/dev/null
+    php artisan db:dump --database="$CURRENT_BACKUP_DIR/task_v${CURRENT_VERSION}_pre_rollback.sql" 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Laravel db:dump failed, trying mysqldump..."
       if command -v mysqldump &> /dev/null; then
@@ -136,7 +136,7 @@ else
           DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
           
           if [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
-            mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "$CURRENT_BACKUP_DIR/mailzila_v${CURRENT_VERSION}_pre_rollback.sql"
+            mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "$CURRENT_BACKUP_DIR/task_v${CURRENT_VERSION}_pre_rollback.sql"
             echo "Current database backup created with mysqldump"
           else
             echo "Warning: Could not get database credentials from .env"

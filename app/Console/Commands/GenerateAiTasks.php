@@ -261,7 +261,7 @@ class GenerateAiTasks extends Command
 
         $action = $actions[$type][array_rand($actions[$type])];
         
-        return "[AI] {$action} {$feature} components";
+        return "{$action} {$feature} components";
     }
 
     protected function generateTaskDescription($feature, $files)
@@ -302,13 +302,27 @@ class GenerateAiTasks extends Command
             $priority = 'low';
         }
 
+        // Get highest task ID from existing tasks
+        $nextId = 1;
+        foreach ($this->tasks as $task) {
+            if (is_numeric($task['id']) && $task['id'] >= $nextId) {
+                $nextId = $task['id'] + 1;
+            }
+        }
+
+        // Remove [AI] prefix if exists
+        $cleanTitle = $title;
+        if (substr($cleanTitle, 0, 5) === '[AI] ') {
+            $cleanTitle = substr($cleanTitle, 5);
+        }
+
         return [
-            'id' => uniqid('ai_'),
-            'title' => $title,
+            'id' => $nextId,
+            'title' => $cleanTitle,
             'description' => $description,
             'status' => 'pending',
             'priority' => $priority,
-            'assignee' => null, // AI tasks are not assigned by default
+            'assignee' => 'ai', // Set assignee to AI by default
             'created_at' => Carbon::now()->toIso8601String(),
             'updated_at' => Carbon::now()->toIso8601String(),
             'due_date' => Carbon::now()->addDays(14)->toIso8601String(),
@@ -355,7 +369,7 @@ class GenerateAiTasks extends Command
         // Generate a sub-task for each type if there are enough files
         foreach ($fileTypes as $type => $typeFiles) {
             if (count($typeFiles) >= 5) {
-                $title = "[AI] Optimize {$feature} {$type} components";
+                $title = "Optimize {$feature} {$type} components";
                 $description = $this->generateTaskDescription("{$feature} {$type}", $typeFiles);
                 $task = $this->createTask($title, $description, $feature, $typeFiles);
                 $tasks[] = $task;

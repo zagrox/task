@@ -40,7 +40,7 @@ class TaskManager extends Command
      *
      * @var string
      */
-    protected $description = 'Manage tasks within the MailZila project';
+    protected $description = 'Manage tasks within the Task project';
 
     /**
      * Task file path

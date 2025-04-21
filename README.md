@@ -1,10 +1,10 @@
-# MailZila
+# Task
 
 A mail management application with comprehensive version control and project management.
 
 ## Description
 
-MailZila is a project focused on providing mail management services with enterprise-grade version control, automated backups, and structured development processes.
+Task is a project focused on providing mail management services with enterprise-grade version control, automated backups, and structured development processes.
 
 ## Project Structure
 
@@ -26,7 +26,7 @@ MailZila is a project focused on providing mail management services with enterpr
 
 ## Version Control System
 
-MailZila incorporates a robust version control framework:
+Task incorporates a robust version control framework:
 
 - **Semantic Versioning**: Automated versioning with comprehensive history
 - **Feature Tracking**: Branch automation tied to roadmap phases
@@ -46,7 +46,7 @@ The project includes an integrated task management system:
 
 ## GitHub Integration
 
-MailZila features a comprehensive GitHub integration:
+Task features a comprehensive GitHub integration:
 
 - **Two-Way Sync**: Tasks can be synchronized with GitHub issues and vice versa
 - **Web Interface**: Sync buttons on task detail and dashboard pages

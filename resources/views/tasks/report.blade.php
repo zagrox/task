@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="metrics-card bg-warning text-dark">
+            <div class="metrics-card bg-warning text-white">
                 <h3>{{ $metadata['ai_tasks'] ?? 0 }}</h3>
                 <p>AI Tasks</p>
             </div>

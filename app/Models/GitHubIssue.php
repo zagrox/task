@@ -8,6 +8,13 @@ use Carbon\Carbon;
 
 class GitHubIssue extends Model
 {
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'github_issues';
+
     protected $fillable = [
         'task_id',
         'repository',
@@ -109,7 +116,7 @@ class GitHubIssue extends Model
         $body .= "- **ID:** " . $task['id'] . "\n";
         $body .= "- **Status:** " . $task['status'] . "\n";
         $body .= "- **Priority:** " . $task['priority'] . "\n";
-        $body .= "- **Assignee:** " . $task['assignee'] . "\n";
+        $body .= "- **Assignee:** user\n";
         
         if (!empty($task['due_date'])) {
             $body .= "- **Due Date:** " . $task['due_date'] . "\n";

@@ -1,13 +1,13 @@
-# MailZila Restoration Guide
+# Task Restoration Guide
 
-This document provides comprehensive instructions for restoring MailZila to a specific version or point in time.
+This document provides comprehensive instructions for restoring Task to a specific version or point in time.
 
 ## Quick Reference
 
 | Restoration Type | Command |
 |------------------|---------|
 | Code only | `git checkout v1.0.0` |
-| Database only | `mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql` |
+| Database only | `mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql` |
 | Full restore | See "Complete Project Restoration" section |
 
 ## 1. Code Restoration
@@ -51,10 +51,10 @@ find backups/snapshots -name "*.sql" -o -name "*.sql.gz"
 
 ```bash
 # For plain SQL files
-mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql
+mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql
 
 # For gzipped SQL files
-zcat backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql.gz | mysql -u username -p mailzila
+zcat backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql.gz | mysql -u username -p task
 ```
 
 ### Using Laravel's migration system:
@@ -64,7 +64,7 @@ zcat backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql.gz | mysql -u 
 php artisan migrate:fresh
 
 # Then import data from backup
-mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql
+mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql
 ```
 
 ## 3. Environment Restoration
@@ -113,10 +113,10 @@ Follow these steps to fully restore the project to a specific version:
    ```bash
    # Option 1: Fresh migrations then import data
    php artisan migrate:fresh
-   mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql
+   mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql
    
    # Option 2: Direct import (no migrations)
-   mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql
+   mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql
    ```
 
 5. **Restore storage files:**
@@ -135,7 +135,7 @@ Follow these steps to fully restore the project to a specific version:
    php artisan --version
    
    # Check application status
-   php artisan mailzila:status
+   php artisan task:status
    
    # Run tests
    php artisan test
@@ -147,8 +147,8 @@ If the system is completely down, follow these steps:
 
 1. Clone the repository to a new location:
    ```bash
-   git clone https://github.com/zagrox/mailzila.git new-mailzila
-   cd new-mailzila
+   git clone https://github.com/zagrox/task.git new-task
+   cd new-task
    ```
 
 2. Checkout the last known working version:
@@ -165,7 +165,7 @@ If the system is completely down, follow these steps:
 - **Error: Table already exists**
   - Solution: Drop the database and create a new one before importing
   ```bash
-  mysql -u username -p -e "DROP DATABASE mailzila; CREATE DATABASE mailzila;"
+  mysql -u username -p -e "DROP DATABASE task; CREATE DATABASE task;"
   ```
 
 ### File permission issues:
@@ -191,4 +191,4 @@ If you continue to experience restoration issues, contact:
 
 - Development Team: dev@example.com
 - System Administrator: admin@example.com
-- AI Assistant: Use the help command with `php artisan mailzila:assistant restore` 
+- AI Assistant: Use the help command with `php artisan task:assistant restore` 

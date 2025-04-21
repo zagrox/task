@@ -8,165 +8,74 @@ use Illuminate\Support\Carbon;
 use App\Services\GitHubService;
 use App\Models\GitHubIssue;
 use Illuminate\Support\Facades\Artisan;
+use App\Models\Tag;
+use App\Models\Task;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
     /**
-     * Path to the tasks file
-     */
-    protected $tasksFile;
-    
-    /**
-     * Path to the version file
-     */
-    protected $versionFile;
-    
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->tasksFile = base_path('project-management/tasks.json');
-        if (!file_exists($this->tasksFile)) {
-            // Create directory if it doesn't exist
-            if (!file_exists(dirname($this->tasksFile))) {
-                mkdir(dirname($this->tasksFile), 0755, true);
-            }
-            // Initialize the tasks file if it doesn't exist
-            $this->initializeTasksFile();
-        }
-        $this->versionFile = base_path('version.json');
-    }
-    
-    /**
      * Display a listing of the tasks
      */
-    public function index(Request $request, GitHubService $github)
+    public function index()
     {
-        // Initialize filters from the request
-        $status = $request->input('status');
-        $assignee = $request->input('assignee');
-        $priority = $request->input('priority');
-        $feature = $request->input('feature');
-        $phase = $request->input('phase');
-        $search = $request->input('search');
-        $tag = $request->input('tag');
-        $version = $request->input('version');
+        $tasks = Task::with('tags')->get();
         
-        // Handle GitHub sync request if needed
-        if ($request->has('sync_to_github')) {
-            $statusToSync = $request->query('sync_to_github', 'pending');
-            
-            // Run sync in the background
-            $exitCode = Artisan::call('tasks:sync-to-github', [
-                '--status' => $statusToSync
-            ]);
-            
-            if ($exitCode === 0) {
-                return redirect()->route('tasks.index')->with('success', "Tasks with status '{$statusToSync}' have been synced to GitHub!");
-            } else {
-                return redirect()->route('tasks.index')->with('error', 'Failed to sync tasks to GitHub. Check the logs for details.');
-            }
-        }
+        // Get versions and sort them in descending order
+        $versions = $this->getVersions();
         
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            $this->initializeTasksFile();
-        }
+        // Get features and phases from existing tasks
+        $features = Task::distinct('related_feature')->whereNotNull('related_feature')->pluck('related_feature')->toArray();
+        $phases = Task::distinct('related_phase')->whereNotNull('related_phase')->pluck('related_phase')->toArray();
         
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        $metadata = $taskData['metadata'] ?? [];
-        $tasks = $taskData['tasks'] ?? [];
+        // Calculate task statistics
+        $totalTasks = $tasks->count();
+        $completedTasks = $tasks->where('status', 'completed')->count();
+        $inProgressTasks = $tasks->where('status', 'in-progress')->count();
+        $pendingTasks = $tasks->where('status', 'pending')->count();
+        $blockedTasks = $tasks->where('status', 'blocked')->count();
+        $reviewTasks = $tasks->where('status', 'review')->count();
         
-        // Apply filters
-        if ($status) {
-            $tasks = array_filter($tasks, function($task) use ($status) {
-                return $task['status'] === $status;
-            });
-        }
+        $highPriorityTasks = $tasks->where('priority', 'high')->count();
+        $mediumPriorityTasks = $tasks->where('priority', 'medium')->count();
+        $lowPriorityTasks = $tasks->where('priority', 'low')->count();
         
-        if ($assignee) {
-            $tasks = array_filter($tasks, function($task) use ($assignee) {
-                return $task['assignee'] === $assignee;
-            });
-        }
+        // Calculate percentages
+        $inProgressPercentage = $totalTasks > 0 ? ($inProgressTasks / $totalTasks) * 100 : 0;
+        $highPriorityPercentage = $totalTasks > 0 ? ($highPriorityTasks / $totalTasks) * 100 : 0;
+        $mediumPriorityPercentage = $totalTasks > 0 ? ($mediumPriorityTasks / $totalTasks) * 100 : 0;
+        $lowPriorityPercentage = $totalTasks > 0 ? ($lowPriorityTasks / $totalTasks) * 100 : 0;
         
-        if ($priority) {
-            $tasks = array_filter($tasks, function($task) use ($priority) {
-                return $task['priority'] === $priority;
-            });
-        }
+        // Find upcoming tasks (due within 7 days)
+        $today = now()->startOfDay();
+        $nextWeek = now()->addDays(7)->endOfDay();
+        $upcomingTasks = $tasks->filter(function($task) use ($today, $nextWeek) {
+            return $task->due_date 
+                && $task->due_date->greaterThanOrEqualTo($today) 
+                && $task->due_date->lessThanOrEqualTo($nextWeek)
+                && $task->status !== 'completed';
+        })->values();
         
-        if ($feature) {
-            $tasks = array_filter($tasks, function($task) use ($feature) {
-                return $task['related_feature'] === $feature;
-            });
-        }
-        
-        if ($phase) {
-            $tasks = array_filter($tasks, function($task) use ($phase) {
-                return $task['related_phase'] === $phase;
-            });
-        }
-        
-        if ($search) {
-            $searchTerm = strtolower($search);
-            $tasks = array_filter($tasks, function($task) use ($searchTerm) {
-                return strpos(strtolower($task['title']), $searchTerm) !== false 
-                    || strpos(strtolower($task['description']), $searchTerm) !== false;
-            });
-        }
-        
-        if ($tag) {
-            $tagSearch = strtolower($tag);
-            $tasks = array_filter($tasks, function($task) use ($tagSearch) {
-                if (empty($task['tags'])) return false;
-                $tags = array_map('trim', explode(',', strtolower($task['tags'])));
-                return in_array($tagSearch, $tags);
-            });
-        }
-        
-        if ($version) {
-            $tasks = array_filter($tasks, function($task) use ($version) {
-                return isset($task['version']) && $task['version'] === $version;
-            });
-        }
-        
-        // Sort tasks by ID in descending order (newest first)
-        usort($tasks, function($a, $b) {
-            return $b['id'] <=> $a['id'];
-        });
-        
-        // Pagination
-        $page = $request->input('page', 1);
-        $perPage = 20;
-        $totalTasks = count($tasks);
-        $totalPages = ceil($totalTasks / $perPage);
-        $page = max(1, min($page, $totalPages));
-        
-        $offset = ($page - 1) * $perPage;
-        $paginatedTasks = array_slice($tasks, $offset, $perPage);
-        
-        return $this->renderTasksView('tasks.index', [
-            'tasks' => array_values($paginatedTasks),
-            'metadata' => $metadata,
-            'filters' => [
-                'status' => $status,
-                'assignee' => $assignee,
-                'priority' => $priority,
-                'feature' => $feature,
-                'phase' => $phase,
-                'search' => $search,
-                'tag' => $tag,
-                'version' => $version,
-            ],
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total' => $totalTasks,
-                'total_pages' => $totalPages
-            ]
+        return view('tasks.index', [
+            'tasks' => $tasks,
+            'versions' => $versions,
+            'features' => $features,
+            'phases' => $phases,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'inProgressTasks' => $inProgressTasks,
+            'pendingTasks' => $pendingTasks,
+            'blockedTasks' => $blockedTasks,
+            'reviewTasks' => $reviewTasks,
+            'highPriorityTasks' => $highPriorityTasks,
+            'mediumPriorityTasks' => $mediumPriorityTasks,
+            'lowPriorityTasks' => $lowPriorityTasks,
+            'inProgressPercentage' => $inProgressPercentage,
+            'highPriorityPercentage' => $highPriorityPercentage,
+            'mediumPriorityPercentage' => $mediumPriorityPercentage,
+            'lowPriorityPercentage' => $lowPriorityPercentage,
+            'upcomingTasks' => $upcomingTasks
         ]);
     }
     
@@ -175,41 +84,10 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
-        }
+        $task = Task::with(['tags', 'dependsOn', 'dependents'])->findOrFail($id);
         
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        
-        // Find the task
-        $task = null;
-        foreach ($taskData['tasks'] as $t) {
-            if ($t['id'] == $id) {
-                $task = $t;
-                break;
-            }
-        }
-        
-        if (!$task) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
-        
-        // Get related tasks (dependencies)
-        $relatedTasks = [];
-        if (!empty($task['dependencies'])) {
-            foreach ($taskData['tasks'] as $t) {
-                if (in_array($t['id'], $task['dependencies'])) {
-                    $relatedTasks[] = $t;
-                }
-            }
-        }
-        
-        // Return view with task
-        return $this->renderTasksView('tasks.show', [
+        return view('tasks.show', [
             'task' => $task,
-            'relatedTasks' => $relatedTasks
         ]);
     }
     
@@ -218,27 +96,21 @@ class TaskController extends Controller
      */
     public function create()
     {
-        // Get unique features and phases for dropdowns
-        $features = [];
-        $phases = [];
+        // Get versions and sort them in descending order
+        $versions = $this->getVersions();
         
-        if (File::exists($this->tasksFile)) {
-            $taskData = json_decode(File::get($this->tasksFile), true);
-            
-            foreach ($taskData['tasks'] as $task) {
-                if (!empty($task['related_feature']) && !in_array($task['related_feature'], $features)) {
-                    $features[] = $task['related_feature'];
-                }
-                
-                if (!empty($task['related_phase']) && !in_array($task['related_phase'], $phases)) {
-                    $phases[] = $task['related_phase'];
-                }
-            }
-        }
+        // Get all features and phases
+        $features = Task::distinct('related_feature')->whereNotNull('related_feature')->pluck('related_feature')->toArray();
+        $phases = Task::distinct('related_phase')->whereNotNull('related_phase')->pluck('related_phase')->toArray();
         
-        return $this->renderTasksView('tasks.create', [
+        // Get all tags
+        $tags = Tag::pluck('name')->toArray();
+        
+        return view('tasks.create', [
+            'versions' => $versions,
             'features' => $features,
-            'phases' => $phases
+            'phases' => $phases,
+            'tags' => $tags
         ]);
     }
     
@@ -247,104 +119,67 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate request
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'assignee' => 'required|in:user,ai',
-            'status' => 'required|in:pending,in-progress,completed,blocked',
-            'priority' => 'required|in:low,medium,high,critical',
+            'description' => 'nullable|string',
+            'assignee' => ['required', Rule::in(['user', 'ai'])],
+            'status' => ['required', Rule::in(['pending', 'in-progress', 'completed', 'blocked', 'review'])],
+            'priority' => ['required', Rule::in(['low', 'medium', 'high', 'critical'])],
             'due_date' => 'nullable|date',
             'related_feature' => 'nullable|string|max:255',
             'related_phase' => 'nullable|string|max:255',
-            'tags' => 'nullable|string',
             'progress' => 'nullable|integer|min:0|max:100',
             'estimated_hours' => 'nullable|numeric|min:0',
-            'actual_hours' => 'nullable|numeric|min:0',
-            'version' => 'nullable|string|max:50',
+            'version' => 'nullable|string|max:255',
         ]);
-        
-        // Create tasks file directory if it doesn't exist
-        if (!File::exists(dirname($this->tasksFile))) {
-            File::makeDirectory(dirname($this->tasksFile), 0755, true);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
-        
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            $initialContent = [
-                'metadata' => [
-                    'total_tasks' => 0,
-                    'completed_tasks' => 0,
-                    'user_tasks' => 0,
-                    'ai_tasks' => 0,
-                    'last_updated' => Carbon::now()->toIso8601String()
-                ],
-                'next_id' => 1,
-                'tasks' => []
-            ];
+
+        // Create new task
+        $task = new Task();
+        $task->title = $request->input('title');
+        $task->description = $request->input('description');
+        $task->assignee = $request->input('assignee');
+        $task->status = $request->input('status');
+        $task->priority = $request->input('priority');
+        $task->due_date = $request->input('due_date');
+        $task->related_feature = $request->input('related_feature');
+        $task->related_phase = $request->input('related_phase');
+        $task->progress = $request->input('progress', 0);
+        $task->estimated_hours = $request->input('estimated_hours');
+        $task->actual_hours = $request->input('actual_hours', 0);
+        $task->version = $request->input('version') ?: null;
+        $task->notes = [];
+        $task->save();
+
+        // Handle tags
+        $tagsInput = $request->input('tags');
+        if ($tagsInput) {
+            $tagNames = array_map('trim', explode(',', $tagsInput));
+            $tagIds = [];
             
-            File::put($this->tasksFile, json_encode($initialContent, JSON_PRETTY_PRINT));
-            $taskData = $initialContent;
-        } else {
-            // Load tasks
-            $taskData = json_decode(File::get($this->tasksFile), true);
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = Tag::firstOrCreate(['name' => $tagName]);
+                    $tagIds[] = $tag->id;
+                }
+            }
+            
+            $task->tags()->sync($tagIds);
         }
-        
-        // Create task
-        $nextId = $taskData['next_id'];
-        $tags = [];
-        
-        if ($request->filled('tags')) {
-            $tags = array_map('trim', explode(',', $request->input('tags')));
+
+        // Handle dependencies
+        $dependencyIds = $request->input('dependencies', []);
+        if (!empty($dependencyIds)) {
+            $task->dependsOn()->sync($dependencyIds);
         }
-        
-        $task = [
-            'id' => $nextId,
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'assignee' => $request->input('assignee'),
-            'status' => $request->input('status'),
-            'priority' => $request->input('priority'),
-            'created_at' => Carbon::now()->toIso8601String(),
-            'updated_at' => Carbon::now()->toIso8601String(),
-            'due_date' => $request->filled('due_date') ? $request->input('due_date') : null,
-            'related_feature' => $request->filled('related_feature') ? $request->input('related_feature') : null,
-            'related_phase' => $request->filled('related_phase') ? $request->input('related_phase') : null,
-            'dependencies' => [],
-            'progress' => $request->filled('progress') ? (int)$request->input('progress') : 0,
-            'notes' => [],
-            'tags' => $tags,
-            'estimated_hours' => $request->filled('estimated_hours') ? (float)$request->input('estimated_hours') : 0,
-            'actual_hours' => $request->filled('actual_hours') ? (float)$request->input('actual_hours') : 0,
-            'version' => $request->filled('version') ? $request->input('version') : null,
-        ];
-        
-        // Add task to tasks array
-        $taskData['tasks'][] = $task;
-        
-        // Increment next ID
-        $taskData['next_id'] = $nextId + 1;
-        
-        // Update metadata
-        $taskData['metadata'] = [
-            'total_tasks' => count($taskData['tasks']),
-            'completed_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['status'] === 'completed';
-            })),
-            'user_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'user';
-            })),
-            'ai_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'ai';
-            })),
-            'last_updated' => Carbon::now()->toIso8601String()
-        ];
-        
-        // Save tasks
-        File::put($this->tasksFile, json_encode($taskData, JSON_PRETTY_PRINT));
-        
-        // Redirect to tasks index
-        return redirect()->route('tasks.index')->with('success', "Task #{$nextId} created successfully");
+
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task created successfully.');
     }
     
     /**
@@ -352,52 +187,32 @@ class TaskController extends Controller
      */
     public function edit($id)
     {
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
-        }
+        $task = Task::with(['tags', 'dependsOn'])->findOrFail($id);
         
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
+        // Get versions and sort them in descending order
+        $versions = $this->getVersions();
         
-        // Find the task
-        $task = null;
-        foreach ($taskData['tasks'] as $t) {
-            if ($t['id'] == $id) {
-                $task = $t;
-                break;
-            }
-        }
+        // Get all features and phases
+        $features = Task::distinct('related_feature')->whereNotNull('related_feature')->pluck('related_feature')->toArray();
+        $phases = Task::distinct('related_phase')->whereNotNull('related_phase')->pluck('related_phase')->toArray();
         
-        if (!$task) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
+        // Get all tags
+        $allTags = Tag::pluck('name')->toArray();
+        $taskTags = $task->tags->pluck('name')->implode(', ');
         
-        // Get unique features and phases for dropdowns
-        $features = [];
-        $phases = [];
+        // Get list of all tasks for dependencies
+        $allTasks = Task::where('id', '!=', $id)->get(['id', 'title']);
+        $taskDependencies = $task->dependsOn->pluck('id')->toArray();
         
-        foreach ($taskData['tasks'] as $t) {
-            if (!empty($t['related_feature']) && !in_array($t['related_feature'], $features)) {
-                $features[] = $t['related_feature'];
-            }
-            
-            if (!empty($t['related_phase']) && !in_array($t['related_phase'], $phases)) {
-                $phases[] = $t['related_phase'];
-            }
-        }
-        
-        // Get potential dependencies (all tasks except this one)
-        $potentialDependencies = array_filter($taskData['tasks'], function($t) use ($id) {
-            return $t['id'] != $id;
-        });
-        
-        // Return view with task
-        return $this->renderTasksView('tasks.edit', [
+        return view('tasks.edit', [
             'task' => $task,
+            'versions' => $versions,
             'features' => $features,
             'phases' => $phases,
-            'potentialDependencies' => $potentialDependencies
+            'allTags' => $allTags,
+            'taskTags' => $taskTags,
+            'allTasks' => $allTasks,
+            'taskDependencies' => $taskDependencies
         ]);
     }
     
@@ -406,192 +221,71 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate request
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'assignee' => 'required|in:user,ai',
-            'status' => 'required|in:pending,in-progress,completed,blocked',
-            'priority' => 'required|in:low,medium,high,critical',
+            'description' => 'nullable|string',
+            'assignee' => ['required', Rule::in(['user', 'ai'])],
+            'status' => ['required', Rule::in(['pending', 'in-progress', 'completed', 'blocked', 'review'])],
+            'priority' => ['required', Rule::in(['low', 'medium', 'high', 'critical'])],
             'due_date' => 'nullable|date',
             'related_feature' => 'nullable|string|max:255',
             'related_phase' => 'nullable|string|max:255',
-            'tags' => 'nullable|string',
             'progress' => 'nullable|integer|min:0|max:100',
             'estimated_hours' => 'nullable|numeric|min:0',
             'actual_hours' => 'nullable|numeric|min:0',
-            'dependencies' => 'nullable|array',
-            'version' => 'nullable|string|max:50',
+            'version' => 'nullable|string|max:255',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        // Find and update task
+        $task = Task::findOrFail($id);
+        $task->title = $request->input('title');
+        $task->description = $request->input('description');
+        $task->assignee = $request->input('assignee');
+        $task->status = $request->input('status');
+        $task->priority = $request->input('priority');
+        $task->due_date = $request->input('due_date');
+        $task->related_feature = $request->input('related_feature');
+        $task->related_phase = $request->input('related_phase');
+        $task->progress = $request->input('progress', 0);
+        $task->estimated_hours = $request->input('estimated_hours');
+        $task->actual_hours = $request->input('actual_hours', 0);
+        $task->version = $request->input('version') ?: null;
         
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
+        // Add note if provided
+        if ($request->filled('note')) {
+            $task->addNote($request->input('note'));
         }
         
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        
-        // Find the task
-        $taskIndex = null;
-        foreach ($taskData['tasks'] as $index => $task) {
-            if ($task['id'] == $id) {
-                $taskIndex = $index;
-                break;
+        $task->save();
+
+        // Handle tags
+        $tagsInput = $request->input('tags');
+        if ($tagsInput !== null) {
+            $tagNames = array_map('trim', explode(',', $tagsInput));
+            $tagIds = [];
+            
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = Tag::firstOrCreate(['name' => $tagName]);
+                    $tagIds[] = $tag->id;
+                }
             }
+            
+            $task->tags()->sync($tagIds);
         }
-        
-        if ($taskIndex === null) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
-        
-        // Create backup
-        $backupDir = base_path('project-management/backups');
-        if (!File::exists($backupDir)) {
-            File::makeDirectory($backupDir, 0755, true);
-        }
-        
-        $backupFile = $backupDir . '/tasks_' . Carbon::now()->format('Ymd_His') . '.json';
-        File::copy($this->tasksFile, $backupFile);
-        
-        // Process tags
-        $tags = [];
-        if ($request->filled('tags')) {
-            $tags = array_map('trim', explode(',', $request->input('tags')));
-        }
-        
-        // Process dependencies
-        $dependencies = $request->filled('dependencies') ? $request->input('dependencies') : [];
-        
-        // Update task
-        $taskData['tasks'][$taskIndex] = [
-            'id' => (int)$id,
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'assignee' => $request->input('assignee'),
-            'status' => $request->input('status'),
-            'priority' => $request->input('priority'),
-            'created_at' => $taskData['tasks'][$taskIndex]['created_at'],
-            'updated_at' => Carbon::now()->toIso8601String(),
-            'due_date' => $request->filled('due_date') ? $request->input('due_date') : null,
-            'related_feature' => $request->filled('related_feature') ? $request->input('related_feature') : null,
-            'related_phase' => $request->filled('related_phase') ? $request->input('related_phase') : null,
-            'dependencies' => array_map('intval', $dependencies),
-            'progress' => $request->filled('progress') ? (int)$request->input('progress') : 0,
-            'notes' => $taskData['tasks'][$taskIndex]['notes'],
-            'tags' => $tags,
-            'estimated_hours' => $request->filled('estimated_hours') ? (float)$request->input('estimated_hours') : 0,
-            'actual_hours' => $request->filled('actual_hours') ? (float)$request->input('actual_hours') : 0,
-            'version' => $request->filled('version') ? $request->input('version') : null,
-        ];
-        
-        // Update metadata
-        $taskData['metadata'] = [
-            'total_tasks' => count($taskData['tasks']),
-            'completed_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['status'] === 'completed';
-            })),
-            'user_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'user';
-            })),
-            'ai_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'ai';
-            })),
-            'last_updated' => Carbon::now()->toIso8601String()
-        ];
-        
-        // Save tasks
-        File::put($this->tasksFile, json_encode($taskData, JSON_PRETTY_PRINT));
-        
-        // Redirect to task details
-        return redirect()->route('tasks.show', $id)->with('success', "Task #{$id} updated successfully");
-    }
-    
-    /**
-     * Add a note to a task
-     */
-    public function addNote(Request $request, $id)
-    {
-        // Validate request
-        $request->validate([
-            'note' => 'required|string'
-        ]);
-        
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
-        }
-        
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        
-        // Find the task
-        $taskIndex = null;
-        foreach ($taskData['tasks'] as $index => $task) {
-            if ($task['id'] == $id) {
-                $taskIndex = $index;
-                break;
-            }
-        }
-        
-        if ($taskIndex === null) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
-        
-        // Create backup
-        $backupDir = base_path('project-management/backups');
-        if (!File::exists($backupDir)) {
-            File::makeDirectory($backupDir, 0755, true);
-        }
-        
-        $backupFile = $backupDir . '/tasks_' . Carbon::now()->format('Ymd_His') . '.json';
-        File::copy($this->tasksFile, $backupFile);
-        
-        // Add note
-        $taskData['tasks'][$taskIndex]['notes'][] = [
-            'content' => $request->input('note'),
-            'timestamp' => Carbon::now()->toIso8601String()
-        ];
-        
-        // Update timestamp
-        $taskData['tasks'][$taskIndex]['updated_at'] = Carbon::now()->toIso8601String();
-        
-        // Save tasks
-        File::put($this->tasksFile, json_encode($taskData, JSON_PRETTY_PRINT));
-        
-        // Redirect to task details
-        return redirect()->route('tasks.show', $id)->with('success', "Note added to Task #{$id}");
-    }
-    
-    /**
-     * Confirm task deletion
-     */
-    public function confirmDelete($id)
-    {
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
-        }
-        
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        
-        // Find the task
-        $task = null;
-        foreach ($taskData['tasks'] as $t) {
-            if ($t['id'] == $id) {
-                $task = $t;
-                break;
-            }
-        }
-        
-        if (!$task) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
-        
-        return $this->renderTasksView('tasks.delete', [
-            'task' => $task
-        ]);
+
+        // Handle dependencies
+        $dependencyIds = $request->input('dependencies', []);
+        $task->dependsOn()->sync($dependencyIds);
+
+        return redirect()->route('tasks.show', $task->id)
+            ->with('success', 'Task updated successfully.');
     }
     
     /**
@@ -599,340 +293,195 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return redirect()->route('tasks.index')->with('error', 'Tasks file not found');
-        }
-        
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        
-        // Find the task
-        $taskExists = false;
-        foreach ($taskData['tasks'] as $task) {
-            if ($task['id'] == $id) {
-                $taskExists = true;
-                break;
-            }
-        }
-        
-        if (!$taskExists) {
-            return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
-        }
-        
-        // Create backup
-        $backupDir = base_path('project-management/backups');
-        if (!File::exists($backupDir)) {
-            File::makeDirectory($backupDir, 0755, true);
-        }
-        
-        $backupFile = $backupDir . '/tasks_' . Carbon::now()->format('Ymd_His') . '.json';
-        File::copy($this->tasksFile, $backupFile);
-        
-        // Remove task
-        $taskData['tasks'] = array_values(array_filter($taskData['tasks'], function($task) use ($id) {
-            return $task['id'] != $id;
-        }));
-        
-        // Update metadata
-        $taskData['metadata'] = [
-            'total_tasks' => count($taskData['tasks']),
-            'completed_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['status'] === 'completed';
-            })),
-            'user_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'user';
-            })),
-            'ai_tasks' => count(array_filter($taskData['tasks'], function($task) {
-                return $task['assignee'] === 'ai';
-            })),
-            'last_updated' => Carbon::now()->toIso8601String()
-        ];
-        
-        // Save tasks
-        File::put($this->tasksFile, json_encode($taskData, JSON_PRETTY_PRINT));
-        
-        // Redirect to tasks index
-        return redirect()->route('tasks.index')->with('success', "Task #{$id} deleted successfully");
+        $task = Task::findOrFail($id);
+        $task->delete();
+
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task deleted successfully.');
     }
     
     /**
-     * Generate report view
+     * Generate a tasks report
      */
-    public function report()
+    public function report(Request $request)
     {
-        // Ensure tasks file exists
-        if (!File::exists($this->tasksFile)) {
-            return $this->renderTasksView('tasks.report', [
-                'tasks' => [],
-                'metadata' => [
-                    'total_tasks' => 0,
-                    'completed_tasks' => 0,
-                    'user_tasks' => 0,
-                    'ai_tasks' => 0
-                ],
-                'summary' => [],
-                'byFeature' => [],
-                'byPhase' => [],
-                'byStatus' => [],
-                'byPriority' => [],
-                'overdue' => [],
-                'dueToday' => [],
-                'comingSoon' => []
-            ]);
+        // Get filter options from the request
+        $status = $request->query('status');
+        $assignee = $request->query('assignee');
+        $priority = $request->query('priority');
+        $feature = $request->query('feature');
+        $phase = $request->query('phase');
+        $tag = $request->query('tag');
+        $version = $request->query('version');
+        
+        // Start building the query
+        $tasksQuery = Task::query();
+        
+        // Apply filters
+        if ($status) {
+            $tasksQuery->where('status', $status);
         }
         
-        // Load tasks
-        $taskData = json_decode(File::get($this->tasksFile), true);
-        $tasks = $taskData['tasks'];
-        $metadata = $taskData['metadata'];
-        
-        // Prepare data for charts and reports
-        
-        // Group by status
-        $byStatus = [];
-        foreach ($tasks as $task) {
-            $status = $task['status'];
-            if (!isset($byStatus[$status])) {
-                $byStatus[$status] = 0;
-            }
-            $byStatus[$status]++;
+        if ($assignee) {
+            $tasksQuery->where('assignee', $assignee);
         }
         
-        // Group by priority
-        $byPriority = [];
-        foreach ($tasks as $task) {
-            $priority = $task['priority'];
-            if (!isset($byPriority[$priority])) {
-                $byPriority[$priority] = 0;
-            }
-            $byPriority[$priority]++;
+        if ($priority) {
+            $tasksQuery->where('priority', $priority);
         }
         
-        // Group by feature
-        $byFeature = [];
-        foreach ($tasks as $task) {
-            $feature = $task['related_feature'] ?: 'Unassigned';
-            if (!isset($byFeature[$feature])) {
-                $byFeature[$feature] = 0;
-            }
-            $byFeature[$feature]++;
+        if ($feature) {
+            $tasksQuery->where('related_feature', $feature);
         }
         
-        // Group by phase
-        $byPhase = [];
-        foreach ($tasks as $task) {
-            $phase = $task['related_phase'] ?: 'Unassigned';
-            if (!isset($byPhase[$phase])) {
-                $byPhase[$phase] = 0;
-            }
-            $byPhase[$phase]++;
+        if ($phase) {
+            $tasksQuery->where('related_phase', $phase);
         }
         
-        // Group by version
-        $byVersion = [];
-        foreach ($tasks as $task) {
-            $version = $task['version'] ?: 'Unassigned';
-            if (!isset($byVersion[$version])) {
-                $byVersion[$version] = 0;
-            }
-            $byVersion[$version]++;
-        }
-        
-        // Due date info
-        $today = Carbon::today()->format('Y-m-d');
-        
-        // Overdue tasks
-        $overdue = array_filter($tasks, function($task) use ($today) {
-            return $task['due_date'] && $task['due_date'] < $today && $task['status'] !== 'completed';
-        });
-        
-        // Tasks due today
-        $dueToday = array_filter($tasks, function($task) use ($today) {
-            return $task['due_date'] === $today && $task['status'] !== 'completed';
-        });
-        
-        // Tasks due in next 7 days
-        $comingSoon = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $futureDate = Carbon::today()->addDays($i)->format('Y-m-d');
-            $dueTasks = array_filter($tasks, function($task) use ($futureDate) {
-                return $task['due_date'] === $futureDate && $task['status'] !== 'completed';
+        if ($tag) {
+            $tasksQuery->whereHas('tags', function ($query) use ($tag) {
+                $query->where('name', $tag);
             });
-            
-            if (count($dueTasks) > 0) {
-                $comingSoon[$futureDate] = $dueTasks;
-            }
         }
         
-        return $this->renderTasksView('tasks.report', [
+        if ($version) {
+            $tasksQuery->where('version', $version);
+        }
+        
+        // Get tasks
+        $tasks = $tasksQuery->with('tags')->get();
+        
+        // Get versions and sort them in descending order
+        $versions = $this->getVersions();
+        
+        // Get features and phases from existing tasks
+        $features = Task::distinct('related_feature')->whereNotNull('related_feature')->pluck('related_feature')->toArray();
+        $phases = Task::distinct('related_phase')->whereNotNull('related_phase')->pluck('related_phase')->toArray();
+        
+        // Get all tags
+        $tags = Tag::pluck('name')->toArray();
+        
+        // Generate report statistics
+        $totalTasks = $tasks->count();
+        $completedTasks = $tasks->where('status', 'completed')->count();
+        $inProgressTasks = $tasks->where('status', 'in-progress')->count();
+        $pendingTasks = $tasks->where('status', 'pending')->count();
+        $blockedTasks = $tasks->where('status', 'blocked')->count();
+        $reviewTasks = $tasks->where('status', 'review')->count();
+        
+        $userTasks = $tasks->where('assignee', 'user')->count();
+        $aiTasks = $tasks->where('assignee', 'ai')->count();
+        
+        $criticalTasks = $tasks->where('priority', 'critical')->count();
+        $highTasks = $tasks->where('priority', 'high')->count();
+        $mediumTasks = $tasks->where('priority', 'medium')->count();
+        $lowTasks = $tasks->where('priority', 'low')->count();
+        
+        $totalEstimatedHours = $tasks->sum('estimated_hours');
+        $totalActualHours = $tasks->sum('actual_hours');
+        
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+        
+        // Calculate statistics by feature
+        $featureStats = [];
+        foreach ($features as $feature) {
+            $featureTasks = $tasks->where('related_feature', $feature);
+            $featureStats[$feature] = [
+                'total' => $featureTasks->count(),
+                'completed' => $featureTasks->where('status', 'completed')->count(),
+                'progress' => $featureTasks->avg('progress') ?: 0
+            ];
+        }
+        
+        // Calculate statistics by phase
+        $phaseStats = [];
+        foreach ($phases as $phase) {
+            $phaseTasks = $tasks->where('related_phase', $phase);
+            $phaseStats[$phase] = [
+                'total' => $phaseTasks->count(),
+                'completed' => $phaseTasks->where('status', 'completed')->count(),
+                'progress' => $phaseTasks->avg('progress') ?: 0
+            ];
+        }
+        
+        return view('tasks.report', [
             'tasks' => $tasks,
-            'metadata' => $metadata,
-            'byStatus' => $byStatus,
-            'byPriority' => $byPriority,
-            'byFeature' => $byFeature,
-            'byPhase' => $byPhase,
-            'byVersion' => $byVersion,
-            'overdue' => $overdue,
-            'dueToday' => $dueToday,
-            'comingSoon' => $comingSoon
+            'filters' => [
+                'status' => $status,
+                'assignee' => $assignee,
+                'priority' => $priority,
+                'feature' => $feature,
+                'phase' => $phase,
+                'tag' => $tag,
+                'version' => $version
+            ],
+            'stats' => [
+                'total' => $totalTasks,
+                'completed' => $completedTasks,
+                'in_progress' => $inProgressTasks,
+                'pending' => $pendingTasks,
+                'blocked' => $blockedTasks,
+                'review' => $reviewTasks,
+                'user' => $userTasks,
+                'ai' => $aiTasks,
+                'critical' => $criticalTasks,
+                'high' => $highTasks,
+                'medium' => $mediumTasks,
+                'low' => $lowTasks,
+                'estimated_hours' => $totalEstimatedHours,
+                'actual_hours' => $totalActualHours,
+                'completion_rate' => $completionRate
+            ],
+            'featureStats' => $featureStats,
+            'phaseStats' => $phaseStats,
+            'versions' => $versions,
+            'features' => $features,
+            'phases' => $phases,
+            'tags' => $tags
         ]);
     }
     
     /**
-     * Get available project versions
+     * Get sorted versions from files and tasks
      */
     protected function getVersions()
     {
         $versions = [];
         
-        // Check for version.json file
-        if (File::exists($this->versionFile)) {
-            $versionData = json_decode(File::get($this->versionFile), true);
-            if (isset($versionData['version'])) {
-                $versions[] = $versionData['version'];
-            }
-            if (isset($versionData['previous_versions']) && is_array($versionData['previous_versions'])) {
-                $versions = array_merge($versions, $versionData['previous_versions']);
-            }
-        }
-        
-        // Check tasks for any other version numbers
-        if (File::exists($this->tasksFile)) {
-            $taskData = json_decode(File::get($this->tasksFile), true);
-            foreach ($taskData['tasks'] as $task) {
-                if (isset($task['version']) && !in_array($task['version'], $versions)) {
-                    $versions[] = $task['version'];
+        // Get versions from version.json if it exists
+        $versionFile = base_path('project-management/version.json');
+        if (File::exists($versionFile)) {
+            $versionData = json_decode(File::get($versionFile), true);
+            if (isset($versionData['versions']) && is_array($versionData['versions'])) {
+                foreach ($versionData['versions'] as $version) {
+                    if (!empty($version)) {
+                        $versions[$version] = true;
+                    }
                 }
             }
         }
         
-        // Sort versions
+        // Add versions from existing tasks
+        $taskVersions = Task::distinct('version')
+            ->whereNotNull('version')
+            ->where('version', '!=', '')
+            ->pluck('version')
+            ->toArray();
+            
+        foreach ($taskVersions as $version) {
+            if (!empty($version)) {
+                $versions[$version] = true;
+            }
+        }
+        
+        $versions = array_keys($versions);
+        
+        // Sort versions in descending order
         usort($versions, function($a, $b) {
-            return version_compare($b, $a); // Newest first
+            return version_compare($b, $a);
         });
         
         return $versions;
-    }
-    
-    /**
-     * Return view with tasks
-     */
-    protected function renderTasksView($view, $data)
-    {
-        // Add versions to data
-        $data['versions'] = $this->getVersions();
-        
-        // For the index view, add task statistics
-        if ($view === 'tasks.index') {
-            // Load all tasks for statistics
-            $allTasks = [];
-            if (File::exists($this->tasksFile)) {
-                $taskData = json_decode(File::get($this->tasksFile), true);
-                $allTasks = $taskData['tasks'] ?? [];
-            }
-            
-            // Calculate statistics
-            $totalTasks = count($allTasks);
-            
-            // Count tasks by status
-            $completedTasks = count(array_filter($allTasks, function($task) {
-                return $task['status'] === 'completed';
-            }));
-            
-            $inProgressTasks = count(array_filter($allTasks, function($task) {
-                return $task['status'] === 'in-progress';
-            }));
-            
-            $pendingTasks = count(array_filter($allTasks, function($task) {
-                return $task['status'] === 'pending';
-            }));
-            
-            $blockedTasks = count(array_filter($allTasks, function($task) {
-                return $task['status'] === 'blocked';
-            }));
-            
-            $reviewTasks = count(array_filter($allTasks, function($task) {
-                return $task['status'] === 'review';
-            }));
-            
-            // Count tasks by priority
-            $highPriorityTasks = count(array_filter($allTasks, function($task) {
-                return $task['priority'] === 'high';
-            }));
-            
-            $mediumPriorityTasks = count(array_filter($allTasks, function($task) {
-                return $task['priority'] === 'medium';
-            }));
-            
-            $lowPriorityTasks = count(array_filter($allTasks, function($task) {
-                return $task['priority'] === 'low';
-            }));
-            
-            // Calculate percentages
-            $inProgressPercentage = $totalTasks > 0 ? ($inProgressTasks / $totalTasks) * 100 : 0;
-            $highPriorityPercentage = $totalTasks > 0 ? ($highPriorityTasks / $totalTasks) * 100 : 0;
-            $mediumPriorityPercentage = $totalTasks > 0 ? ($mediumPriorityTasks / $totalTasks) * 100 : 0;
-            $lowPriorityPercentage = $totalTasks > 0 ? ($lowPriorityTasks / $totalTasks) * 100 : 0;
-            
-            // Find upcoming tasks (due within 7 days)
-            $upcomingTasks = array_filter($allTasks, function($task) {
-                if (empty($task['due_date']) || $task['status'] === 'completed') {
-                    return false;
-                }
-                
-                $dueDate = strtotime($task['due_date']);
-                $today = strtotime('today');
-                $sevenDaysLater = strtotime('+7 days');
-                
-                return $dueDate >= $today && $dueDate <= $sevenDaysLater;
-            });
-            
-            // Add statistics to data
-            $data['totalTasks'] = $totalTasks;
-            $data['completedTasks'] = $completedTasks;
-            $data['inProgressTasks'] = $inProgressTasks;
-            $data['pendingTasks'] = $pendingTasks;
-            $data['blockedTasks'] = $blockedTasks;
-            $data['reviewTasks'] = $reviewTasks;
-            $data['highPriorityTasks'] = $highPriorityTasks;
-            $data['mediumPriorityTasks'] = $mediumPriorityTasks;
-            $data['lowPriorityTasks'] = $lowPriorityTasks;
-            $data['inProgressPercentage'] = $inProgressPercentage;
-            $data['highPriorityPercentage'] = $highPriorityPercentage;
-            $data['mediumPriorityPercentage'] = $mediumPriorityPercentage;
-            $data['lowPriorityPercentage'] = $lowPriorityPercentage;
-            $data['upcomingTasks'] = array_values($upcomingTasks);
-        }
-        
-        return view($view, $data);
-    }
-    
-    /**
-     * Initialize the tasks file with default structure
-     */
-    protected function initializeTasksFile()
-    {
-        $initialContent = [
-            'metadata' => [
-                'total_tasks' => 0,
-                'completed_tasks' => 0,
-                'user_tasks' => 0,
-                'ai_tasks' => 0,
-                'last_updated' => Carbon::now()->toIso8601String()
-            ],
-            'next_id' => 1,
-            'tasks' => []
-        ];
-        
-        // Create directory if it doesn't exist
-        if (!File::exists(dirname($this->tasksFile))) {
-            File::makeDirectory(dirname($this->tasksFile), 0755, true);
-        }
-        
-        File::put($this->tasksFile, json_encode($initialContent, JSON_PRETTY_PRINT));
-        
-        return $initialContent;
     }
 
     /**

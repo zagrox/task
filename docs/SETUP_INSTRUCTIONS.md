@@ -1,12 +1,12 @@
-# MailZila Project Setup Instructions
+# Task Project Setup Instructions
 
-Follow these steps in order to set up the MailZila project with our version control system.
+Follow these steps in order to set up the Task project with our version control system.
 
 ## 1. Install Laravel
 
 ```bash
 # Navigate to your project directory if not already there
-# cd /Applications/MAMP/htdocs/mailzila
+# cd /Applications/MAMP/htdocs/task
 
 # Install Laravel in the current directory
 composer create-project laravel/laravel .
@@ -41,8 +41,8 @@ chmod +x .git/hooks/pre-commit
 3. Initialize the version control system:
 ```bash
 # Create initial version
-php artisan vendor:publish --tag=mailzila-version-control
-php artisan mailzila:init
+php artisan vendor:publish --tag=task-version-control
+php artisan task:init
 ```
 
 4. Register the GitMonitor command in Laravel's scheduler:
@@ -58,5 +58,5 @@ $schedule->command('git:monitor')->hourly();
 php artisan --version
 
 # Verify version control system
-php artisan mailzila:status
+php artisan task:status
 ``` 

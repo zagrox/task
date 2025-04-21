@@ -3,7 +3,7 @@
 ## Reference ID: `P1-SETUP`
 
 ## Description
-Set up version control system and project infrastructure for MailZila. This phase focuses on establishing a solid foundation for the project with robust version control, automated tracking, and comprehensive backup and restoration capabilities.
+Set up version control system and project infrastructure for Task. This phase focuses on establishing a solid foundation for the project with robust version control, automated tracking, and comprehensive backup and restoration capabilities.
 
 ## Start Date
 2023-08-01

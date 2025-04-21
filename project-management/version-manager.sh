@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# MailZila Version Manager
+# Task Version Manager
 # A shell script for managing version information
 
 # Display script usage
 function show_help {
-    echo "MailZila Version Manager"
+    echo "Task Version Manager"
     echo "========================"
     echo "Description: Manage project versions, tags, and release notes"
     echo ""

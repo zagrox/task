@@ -1,0 +1,2 @@
+# Add this to your crontab by running: crontab -e
+0 0 * * 0 /Applications/MAMP/htdocs/task/project-management/validate-task-ids.sh >> /Applications/MAMP/htdocs/task/project-management/task-validation.log 2>&1

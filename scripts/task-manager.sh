@@ -402,7 +402,7 @@ function generate_report() {
 
 # Display help
 function show_help() {
-  echo "MailZila Task Manager v$VERSION"
+  echo "Task Task Manager v$VERSION"
   echo "Usage: $0 <command> [options]"
   echo ""
   echo "Commands:"

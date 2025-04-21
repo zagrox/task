@@ -113,7 +113,7 @@ fi
 
 # Create database backup
 BACKUP_DIR="backups/v$VERSION"
-BACKUP_FILE="$BACKUP_DIR/mailzila_v${VERSION}.sqlite"
+BACKUP_FILE="$BACKUP_DIR/task_v${VERSION}.sqlite"
 mkdir -p "$BACKUP_DIR"
 BACKUP_SUCCESS=false
 

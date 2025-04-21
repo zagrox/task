@@ -34,7 +34,7 @@ BACKUP_SUCCESS=false
 # Try to backup database - first try Laravel, then direct MySQL
 if command -v php &> /dev/null && [ -f "artisan" ]; then
   echo "Attempting database backup with Laravel..."
-  php artisan db:dump --database="$BACKUP_DIR/mailzila_v${VERSION}_${TIMESTAMP}.sql" 2>/dev/null
+  php artisan db:dump --database="$BACKUP_DIR/task_v${VERSION}_${TIMESTAMP}.sql" 2>/dev/null
   
   if [ $? -eq 0 ]; then
     echo "✅ Database backup created with Laravel"
@@ -53,7 +53,7 @@ if command -v php &> /dev/null && [ -f "artisan" ]; then
         
         # Use compression for performance if available
         if command -v gzip &> /dev/null; then
-          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" | gzip > "$BACKUP_DIR/mailzila_v${VERSION}_${TIMESTAMP}.sql.gz"
+          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" | gzip > "$BACKUP_DIR/task_v${VERSION}_${TIMESTAMP}.sql.gz"
           if [ ${PIPESTATUS[0]} -eq 0 ]; then
             echo "✅ Database backup created with mysqldump and compressed"
             BACKUP_SUCCESS=true
@@ -61,7 +61,7 @@ if command -v php &> /dev/null && [ -f "artisan" ]; then
             echo "❌ MySQL backup failed"
           fi
         else
-          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "$BACKUP_DIR/mailzila_v${VERSION}_${TIMESTAMP}.sql"
+          mysqldump -u "$DB_USERNAME" --password="$DB_PASSWORD" "$DB_DATABASE" > "$BACKUP_DIR/task_v${VERSION}_${TIMESTAMP}.sql"
           if [ $? -eq 0 ]; then
             echo "✅ Database backup created with mysqldump"
             BACKUP_SUCCESS=true
@@ -177,16 +177,16 @@ fi
 # Optional - try to upload to remote storage if rclone is configured
 if command -v rclone &> /dev/null; then
   echo "Checking for remote storage destinations..."
-  if rclone listremotes | grep -q "mailzila-backups:"; then
+  if rclone listremotes | grep -q "task-backups:"; then
     echo "Uploading backup to remote storage..."
-    rclone copy "$BACKUP_DIR" mailzila-backups:v$VERSION
+    rclone copy "$BACKUP_DIR" task-backups:v$VERSION
     if [ $? -eq 0 ]; then
       echo "✅ Uploaded to remote storage"
     else
       echo "❌ Remote storage upload failed"
     fi
   else
-    echo "⚠️ No mailzila-backups remote configured in rclone"
+    echo "⚠️ No task-backups remote configured in rclone"
   fi
 else
   echo "ℹ️ rclone not found, skipping remote backup"

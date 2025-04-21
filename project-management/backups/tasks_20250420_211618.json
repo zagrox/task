@@ -1,0 +1,1367 @@
+{
+  "metadata": {
+    "total_tasks": 43,
+    "completed_tasks": 25,
+    "user_tasks": 27,
+    "ai_tasks": 15,
+    "last_updated": "2025-04-20T17:46:14Z"
+  },
+  "tasks": [
+    {
+      "id": 13,
+      "title": "Implement Git version history synchronization",
+      "description": "Developed a comprehensive system for synchronizing version history between the application's version.json file and Git repository. Created a sequential version reconstruction approach that preserves semantic versioning structure while maintaining a linear Git history with proper tags. This ensures all 8 versions (1.0.0 through 1.0.7) are accurately represented in the Git history with appropriate tags, commits, and simulated changes for each version.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-17T12:00:00+00:00",
+      "updated_at": "2025-04-17T12:00:00+00:00",
+      "due_date": "2025-04-17",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        10,
+        12
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created version-github-sync.sh script for sequential version reconstruction",
+          "timestamp": "2025-04-17T11:20:00+00:00"
+        },
+        {
+          "content": "Modified script to be compatible with macOS bash (replacing mapfile with custom readarray function)",
+          "timestamp": "2025-04-17T11:30:00+00:00"
+        },
+        {
+          "content": "Implemented simulation of version-specific changes for each version in the history",
+          "timestamp": "2025-04-17T11:40:00+00:00"
+        },
+        {
+          "content": "Created comprehensive documentation in VERSION-GITHUB-STRATEGY.md explaining the approach",
+          "timestamp": "2025-04-17T11:50:00+00:00"
+        },
+        {
+          "content": "Key features implemented:\n- Linear history with proper Git tags\n- Semantic versioning structure preservation\n- Integration with existing version management tools\n- Simulation of version-specific changes\n- Clear documentation for future maintenance",
+          "timestamp": "2025-04-17T11:55:00+00:00"
+        },
+        {
+          "content": "Technical implementation details:\n- Script reads version history from version.json\n- Processes versions in chronological order (1.0.0 first)\n- Determines version type (major/minor/patch) automatically\n- Uses version-manager.sh for version bumping\n- Creates appropriate Git tags with annotation\n- Simulates version-specific changes using case statement\n- Shows process plan and asks for confirmation before execution",
+          "timestamp": "2025-04-17T11:57:00+00:00"
+        },
+        {
+          "content": "Version-specific changes simulated:\n- v1.0.0: Initial structure with core files\n- v1.0.1: UI improvements in layout templates\n- v1.0.2: Added metrics dashboard\n- v1.0.3: Task export and edit interface\n- v1.0.4: Task filtering and reporting\n- v1.0.5: Rollback functionality\n- v1.0.6: Dashboard rendering fixes\n- v1.0.7: Version management tab",
+          "timestamp": "2025-04-17T11:58:00+00:00"
+        },
+        {
+          "content": "Documentation now explains:\n- Sequential reconstruction approach\n- Process flow from version.json to Git history\n- Version-specific changes for each release\n- Git tag structure and convention\n- Instructions for pushing to remote repository\n- Best practices for maintaining version history",
+          "timestamp": "2025-04-17T11:59:00+00:00"
+        }
+      ],
+      "tags": [
+        "version-control",
+        "git",
+        "synchronization",
+        "documentation",
+        "ai-generated"
+      ],
+      "estimated_hours": 3,
+      "actual_hours": 2.5,
+      "version": "1.0.7"
+    },
+    {
+      "id": 6,
+      "title": "Fix render issues on task dashboard",
+      "description": "Fixed property access issues with tasks array and improved dashboard rendering for better task visualization",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-18T10:00:00Z",
+      "updated_at": "2025-04-18T10:30:00Z",
+      "due_date": "2025-04-18",
+      "related_feature": "Task Management",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        1,
+        3
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Fixed object property access on arrays by converting to array notation",
+          "timestamp": "2025-04-18T10:15:00Z"
+        },
+        {
+          "content": "Added fallback array filtering for statistics when not provided by controller",
+          "timestamp": "2025-04-18T10:30:00Z"
+        }
+      ],
+      "tags": [
+        "bugfix",
+        "frontend",
+        "backend"
+      ],
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "1.0.6"
+    },
+    {
+      "id": 1,
+      "title": "Create task management system",
+      "description": "Build a comprehensive task tracking system for project management",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-16T18:00:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Task Management",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Successfully implemented task management system",
+          "timestamp": "2025-04-16T19:45:00Z"
+        }
+      ],
+      "tags": [
+        "frontend",
+        "backend",
+        "project-management"
+      ],
+      "estimated_hours": 25,
+      "actual_hours": 28,
+      "version": "1.0.5"
+    },
+    {
+      "id": 2,
+      "title": "Create rollback functionality",
+      "description": "Implement script for rolling back to previous versions with database backups",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-16T18:30:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Version Control",
+      "related_phase": "P2-CORE",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created rollback.sh script with full version and database backup support",
+          "timestamp": "2025-04-16T18:52:00Z"
+        }
+      ],
+      "tags": [
+        "backend",
+        "version-control",
+        "database"
+      ],
+      "estimated_hours": 5,
+      "actual_hours": 4,
+      "version": "1.0.5"
+    },
+    {
+      "id": 3,
+      "title": "Fix 404 error on tasks page",
+      "description": "Debug and fix 404 errors with routing and configuration for the task management pages",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "critical",
+      "created_at": "2025-04-16T19:00:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Task Management",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        1
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created RouteServiceProvider to handle routing",
+          "timestamp": "2025-04-16T19:15:00Z"
+        },
+        {
+          "content": "Fixed .htaccess for subdirectory installation",
+          "timestamp": "2025-04-16T19:30:00Z"
+        }
+      ],
+      "tags": [
+        "backend",
+        "routing",
+        "bugfix"
+      ],
+      "estimated_hours": 3,
+      "actual_hours": 2,
+      "version": "1.0.5"
+    },
+    {
+      "id": 4,
+      "title": "Configure virtual host for direct access",
+      "description": "Set up Apache virtual host to provide direct access to the application without /public/ in the URL",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-16T19:20:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Infrastructure",
+      "related_phase": "P1-SETUP",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Configured virtual host at mailzila.local",
+          "timestamp": "2025-04-16T19:35:00Z"
+        }
+      ],
+      "tags": [
+        "server",
+        "configuration",
+        "apache"
+      ],
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "1.0.5"
+    },
+    {
+      "id": 5,
+      "title": "Release version 1.0.5",
+      "description": "Package and release the new version with task management functionality",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-16T19:40:00Z",
+      "updated_at": "2025-04-16T19:45:00Z",
+      "due_date": "2025-04-16",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Tagged v1.0.5 in Git repository",
+          "timestamp": "2025-04-16T19:45:00Z"
+        }
+      ],
+      "tags": [
+        "release",
+        "version-control"
+      ],
+      "estimated_hours": 1,
+      "actual_hours": 1,
+      "version": "1.0.5"
+    },
+    {
+      "id": 7,
+      "title": "Improve Configuration functionality",
+      "description": "Based on recent changes to the Configuration, this task involves:\n\n\nRecent changes included:\n- Update app version to 1.0.6 in config file\n- Release v0.1.1\n- Release version 1.0.5 - Task Management System\n\nThis task is AI-generated based on code analysis and may require further refinement.",
+      "assignee": "ai",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-16T17:20:26+00:00",
+      "updated_at": "2025-04-16T17:20:26+00:00",
+      "due_date": "2025-04-23",
+      "related_feature": "System Config",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Auto-generated task based on recent code changes.",
+          "timestamp": "2025-04-16T17:20:26+00:00"
+        }
+      ],
+      "tags": [
+        "configuration",
+        "update",
+        "ai-generated"
+      ],
+      "estimated_hours": 4,
+      "actual_hours": 0,
+      "version": "1.0.6"
+    },
+    {
+      "id": 8,
+      "title": "Review and optimize Command Line Tools",
+      "description": "Based on recent changes to the Command Line Tools, this task involves:\n\n\nRecent changes included:\n- Initial project setup with Laravel and version control system [REF:P1-SETUP]\n\nThis task is AI-generated based on code analysis and may require further refinement.",
+      "assignee": "ai",
+      "status": "pending",
+      "priority": "low",
+      "created_at": "2025-04-16T17:20:26+00:00",
+      "updated_at": "2025-04-16T17:20:26+00:00",
+      "due_date": "2025-04-23",
+      "related_feature": "CLI Tools",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Auto-generated task based on recent code changes.",
+          "timestamp": "2025-04-16T17:20:26+00:00"
+        }
+      ],
+      "tags": [
+        "command-line-tools",
+        "ai-generated"
+      ],
+      "estimated_hours": 3,
+      "actual_hours": 0,
+      "version": "1.0.6"
+    },
+    {
+      "id": 9,
+      "title": "Add Version Management tab to task dashboard",
+      "description": "Implement a new version management tab in the task dashboard to display version information and allow users to push versions to the Git repository. This feature enhances project management by providing visibility into version status and streamlining the deployment process.",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-17T09:15:30+00:00",
+      "updated_at": "2025-04-17T09:15:30+00:00",
+      "due_date": "2025-04-17",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        2,
+        5
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created VersionController with Git status tracking and repository push functionality",
+          "timestamp": "2025-04-17T09:00:00+00:00"
+        },
+        {
+          "content": "Designed user interface with version history, current version display, and Git status information",
+          "timestamp": "2025-04-17T09:05:00+00:00"
+        },
+        {
+          "content": "Added 'Push to Repository' feature with confirmation modal and error handling",
+          "timestamp": "2025-04-17T09:10:00+00:00"
+        },
+        {
+          "content": "Implemented automatic task creation when versions are pushed to the repository",
+          "timestamp": "2025-04-17T09:15:00+00:00"
+        }
+      ],
+      "tags": [
+        "version-control",
+        "ui",
+        "git",
+        "dashboard"
+      ],
+      "estimated_hours": 5,
+      "actual_hours": 4.5,
+      "version": "1.0.7"
+    },
+    {
+      "id": 10,
+      "title": "Implement comprehensive version management system",
+      "description": "Developed a complete version management system including Artisan commands, shell scripts, and documentation. This system enables semantic versioning support, Git integration, and task-based tracking of version updates. Features include version bumping, history tracking, and release notes management.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-17T10:30:00+00:00",
+      "updated_at": "2025-04-17T10:30:00+00:00",
+      "due_date": "2025-04-17",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        2,
+        5,
+        9
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created UpdateVersion Artisan command for version bumping with Git integration",
+          "timestamp": "2025-04-17T09:30:00+00:00"
+        },
+        {
+          "content": "Developed version-manager.sh shell script for CLI version management",
+          "timestamp": "2025-04-17T09:45:00+00:00"
+        },
+        {
+          "content": "Created version-badge Blade component for consistent version display",
+          "timestamp": "2025-04-17T10:00:00+00:00"
+        },
+        {
+          "content": "Added task integration for automatic task creation during version updates",
+          "timestamp": "2025-04-17T10:15:00+00:00"
+        },
+        {
+          "content": "Wrote comprehensive documentation on version management procedures",
+          "timestamp": "2025-04-17T10:25:00+00:00"
+        }
+      ],
+      "tags": [
+        "version-control",
+        "git",
+        "automation",
+        "documentation",
+        "ai-generated"
+      ],
+      "estimated_hours": 6,
+      "actual_hours": 5.5,
+      "version": "1.0.7"
+    },
+    {
+      "id": 12,
+      "title": "Synchronize version history with Git tags",
+      "description": "Updated the version history in version.json to include all version releases from 1.0.0 to 1.0.7 with accurate release notes. This ensures compatibility between the version management system and Git, allowing for proper tracking and visualization of project history.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-17T11:15:00+00:00",
+      "updated_at": "2025-04-17T11:15:00+00:00",
+      "due_date": "2025-04-17",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        9,
+        10
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Updated version.json to include complete history from 1.0.0 to 1.0.7",
+          "timestamp": "2025-04-17T11:05:00+00:00"
+        },
+        {
+          "content": "Added detailed release notes for each version",
+          "timestamp": "2025-04-17T11:10:00+00:00"
+        },
+        {
+          "content": "Updated previous_versions array to include pre-1.0.0 releases",
+          "timestamp": "2025-04-17T11:15:00+00:00"
+        }
+      ],
+      "tags": [
+        "version-control",
+        "git",
+        "documentation",
+        "history",
+        "ai-generated"
+      ],
+      "estimated_hours": 1,
+      "actual_hours": 0.75,
+      "version": "1.0.7"
+    },
+    {
+      "id": 11,
+      "title": "Fix Laravel development server connection issues",
+      "description": "Diagnosed and resolved server connectivity issues that were preventing access to the task management system. Identified that the Laravel development server wasn't running while the user was trying to access the app through port 8000. Started the server and verified connectivity to the tasks page.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "critical",
+      "created_at": "2025-04-17T11:00:00+00:00",
+      "updated_at": "2025-04-17T11:00:00+00:00",
+      "due_date": "2025-04-17",
+      "related_feature": "Infrastructure",
+      "related_phase": "P1-SETUP",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Diagnosed that no service was running on port 8000",
+          "timestamp": "2025-04-17T10:40:00+00:00"
+        },
+        {
+          "content": "Verified MAMP was running but on port 8888, not port 8000",
+          "timestamp": "2025-04-17T10:45:00+00:00"
+        },
+        {
+          "content": "Started Laravel development server with 'php artisan serve'",
+          "timestamp": "2025-04-17T10:50:00+00:00"
+        },
+        {
+          "content": "Verified successful connection to application at http://127.0.0.1:8000/tasks",
+          "timestamp": "2025-04-17T10:55:00+00:00"
+        }
+      ],
+      "tags": [
+        "server",
+        "connectivity",
+        "troubleshooting",
+        "bugfix",
+        "ai-generated"
+      ],
+      "estimated_hours": 1,
+      "actual_hours": 0.5,
+      "version": "1.0.7"
+    },
+    {
+      "id": 14,
+      "title": "Version update: 1.0.0 → 1.1.0",
+      "description": "Updated project version from 1.0.0 to 1.1.0.\n\nRelease notes: Added Git version history synchronization, comprehensive version management system, and task tracking",
+      "assignee": "system",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-18T14:16:11+00:00",
+      "updated_at": "2025-04-18T14:16:11+00:00",
+      "due_date": "2025-04-18",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [],
+      "progress": 100,
+      "tags": [
+        "version-control",
+        "system"
+      ],
+      "estimated_hours": 0.5,
+      "actual_hours": 0.5,
+      "version": "1.1.0",
+      "notes": [
+        {
+          "content": "Automatic version update via command line",
+          "timestamp": "2025-04-18T14:16:11+00:00"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Implement version management safeguards",
+      "description": "Added comprehensive safeguards to prevent accidental version downgrades and ensure version integrity across the application. Fixed current version discrepancy, enhanced version management scripts with backup/restore functionality, added confirmation dialogs, implemented validation in the Laravel command, and updated documentation.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "critical",
+      "created_at": "2025-04-19T10:00:00+00:00",
+      "updated_at": "2025-04-19T10:30:15+00:00",
+      "due_date": "2025-04-19",
+      "related_feature": "Version Control",
+      "related_phase": "P3-ENHANCED",
+      "dependencies": [
+        13
+      ],
+      "progress": 100,
+      "tags": [
+        "version-control",
+        "security",
+        "data-integrity",
+        "bugfix",
+        "documentation",
+        "ai-generated"
+      ],
+      "estimated_hours": 4,
+      "actual_hours": 3.5,
+      "version": "1.0.7",
+      "notes": [
+        {
+          "content": "Fixed current version inconsistency by restoring version.json to 1.0.7 and ensuring app.php was updated to match",
+          "timestamp": "2025-04-19T10:05:00+00:00"
+        },
+        {
+          "content": "Enhanced scripts/version-github-sync.sh with automatic backup/restore functionality for version.json and app.php",
+          "timestamp": "2025-04-19T10:10:00+00:00"
+        },
+        {
+          "content": "Added interrupt traps to version-github-sync.sh to restore original files on script termination",
+          "timestamp": "2025-04-19T10:12:00+00:00"
+        },
+        {
+          "content": "Implemented version processing checks and clear warnings about modifications",
+          "timestamp": "2025-04-19T10:15:00+00:00"
+        },
+        {
+          "content": "Updated project-management/version-manager.sh with confirmation dialog and version display",
+          "timestamp": "2025-04-19T10:18:00+00:00"
+        },
+        {
+          "content": "Modified UpdateVersion.php command to include --force option for intentional downgrades",
+          "timestamp": "2025-04-19T10:21:00+00:00"
+        },
+        {
+          "content": "Added validation in UpdateVersion.php to prevent accidental downgrades",
+          "timestamp": "2025-04-19T10:23:00+00:00"
+        },
+        {
+          "content": "Implemented double confirmation for major version changes in UpdateVersion.php",
+          "timestamp": "2025-04-19T10:25:00+00:00"
+        },
+        {
+          "content": "Updated VERSION-MANAGEMENT.md with critical warning section and detailed safeguard information",
+          "timestamp": "2025-04-19T10:27:00+00:00"
+        },
+        {
+          "content": "Added production version information (1.0.7) to documentation",
+          "timestamp": "2025-04-19T10:28:00+00:00"
+        },
+        {
+          "content": "Verified correct version display (1.0.7) using version-manager.sh show command",
+          "timestamp": "2025-04-19T10:30:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Release v1.0.8",
+      "description": "Automatically generated task from commit 1c209fb.\n\nCommit Message: Release v1.0.8\nType: task\nChanged Files:\n- config/app.php\n- version.json\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-18T15:20:42Z",
+      "updated_at": "2025-04-18T15:20:42Z",
+      "due_date": null,
+      "related_feature": "config",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Implemented task sorting by newest first and added pagination with 20 tasks per page. The implementation sorts tasks by ID in descending order and limits to 20 tasks per page with proper pagination controls that maintain any active filters when navigating between pages.",
+          "timestamp": "2025-04-18T15:20:42Z"
+        }
+      ],
+      "tags": "task,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.8"
+    },
+    {
+      "id": 18,
+      "title": "Create Git version pushing scripts",
+      "description": "Developed a suite of shell scripts to manage pushing versions to Git repositories, including push-previous-version.sh to push the version before the latest, push-all-versions.sh to push all versions in order, and push-version.sh to push a specific version.",
+      "assignee": "ai",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-18T17:30:00Z",
+      "updated_at": "2025-04-18T17:30:00Z",
+      "due_date": "2025-04-18",
+      "related_feature": "Version Control",
+      "related_phase": "implementation",
+      "dependencies": [
+        17
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created push-previous-version.sh to automatically identify and push the version before the most recent one",
+          "timestamp": "2025-04-18T17:15:00Z"
+        },
+        {
+          "content": "Developed push-all-versions.sh to push all versions in sequential order to a remote Git repository",
+          "timestamp": "2025-04-18T17:20:00Z"
+        },
+        {
+          "content": "Created push-version.sh for targeted version pushing with validation and error handling",
+          "timestamp": "2025-04-18T17:25:00Z"
+        },
+        {
+          "content": "All scripts include intelligent remote handling with automatic remote detection and configuration",
+          "timestamp": "2025-04-18T17:30:00Z"
+        }
+      ],
+      "tags": "version-control,git,automation,scripts",
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "1.0.8"
+    },
+    {
+      "id": 17,
+      "title": "Fix version backup system",
+      "description": "Fixed issues with database backups for version releases by improving the backup creation process and retroactively generating missing backups for all version directories.",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-04-18T16:30:00Z",
+      "updated_at": "2025-04-18T16:30:00Z",
+      "due_date": "2025-04-18",
+      "related_feature": "Version Control",
+      "related_phase": "implementation",
+      "dependencies": [
+        16
+      ],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "Created fix-backups.sh script to automatically identify and fill missing database backups for all versions",
+          "timestamp": "2025-04-18T16:30:00Z"
+        },
+        {
+          "content": "Enhanced release.sh script to improve database backup reliability with better detection of database type and multiple backup methods",
+          "timestamp": "2025-04-18T16:30:30Z"
+        },
+        {
+          "content": "Added backup tracking in version.json to maintain a record of all backup files",
+          "timestamp": "2025-04-18T16:31:00Z"
+        },
+        {
+          "content": "Successfully created database backups for all versions: v0.1.1, v1.0.0, v1.0.1, v1.0.2, v1.0.3, v1.0.4, v1.0.5, v1.0.6, v1.0.7, and v1.0.8",
+          "timestamp": "2025-04-18T16:31:30Z"
+        }
+      ],
+      "tags": "fix,version-control,database,backups",
+      "estimated_hours": 2,
+      "actual_hours": 1.5,
+      "version": "1.0.8"
+    },
+    {
+      "id": 19,
+      "title": "Implement Real-time Task Notifications",
+      "description": "Develop a real-time notification system for task updates using websockets to provide instant alerts when tasks are created, updated, or assigned to users.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-15",
+      "related_feature": "Notifications",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Technical requirements analysis:\n- Integrate Laravel Echo for websocket connections\n- Use Pusher or self-hosted socket server\n- Create notification database model with polymorphic relationships\n- Implement browser notifications API support\n- Design notification center UI with read/unread status",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Key features to implement:\n- Real-time task assignment notifications\n- Status change alerts\n- Deadline reminders\n- @mentions in comments\n- Notification preferences by type and channel (in-app, email, browser)",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Implementation approach:\n1. Set up Laravel Echo and websocket server\n2. Create notification model and migration\n3. Implement notification events and listeners\n4. Design notification UI components\n5. Add notification preferences\n6. Implement browser notification API\n7. Create email templates for notification digests",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "notifications,real-time,websockets,user-experience",
+      "estimated_hours": 24,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 20,
+      "title": "Enhance Mobile Responsiveness",
+      "description": "Optimize the task management interface for mobile devices with responsive design improvements, touch-friendly controls, and mobile-specific UX enhancements.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-10",
+      "related_feature": "UI/UX",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Current mobile issues identified:\n- Task table overflows on small screens\n- Form controls too small for touch input\n- Filter dropdowns difficult to use on mobile\n- Charts not scaling properly\n- Navigation menu needs better mobile styling",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Proposed solutions:\n- Convert task table to card layout on small screens\n- Create mobile-specific task detail view\n- Implement touch-friendly form controls (larger buttons, inputs)\n- Redesign filters as expandable accordion\n- Create mobile-optimized chart components\n- Enhance mobile navigation with bottom bar option",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Testing plan:\n- Create device testing matrix (iOS/Android, different screen sizes)\n- Implement automated responsive testing with Playwright\n- Conduct usability testing with mobile users\n- Create mobile-specific user journeys and validate",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "mobile,responsive,UI,UX,front-end",
+      "estimated_hours": 18,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 21,
+      "title": "Task Dependency Visualization",
+      "description": "Create an interactive visual graph to display task dependencies and relationships, allowing users to see task hierarchies and manage dependencies through a drag-and-drop interface.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-25",
+      "related_feature": "Task Management",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Technical approach:\n- Evaluate visualization libraries (D3.js, vis.js, or Cytoscape.js)\n- Create directed graph model for task dependencies\n- Design force-directed layout with zooming/panning\n- Implement path highlighting for critical paths\n- Create interactive node editing (drag-and-drop dependency creation)",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Core features to implement:\n- Task dependency graph with different relationship types\n- Critical path highlighting\n- Visual indicators for task status/priority\n- Interactive dependency creation and editing\n- Task filtering within the graph\n- Export graph as image/PDF\n- Dependency impact analysis (what depends on selected task)",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Data structure considerations:\n- Need to optimize graph data structure for large task sets\n- Consider implementing caching for complex dependency calculations\n- May need to limit visibility/depth for performance with large dependency trees\n- Should add validation to prevent circular dependencies",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "visualization,dependencies,graph,interactive,UI",
+      "estimated_hours": 32,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 22,
+      "title": "Implement Automated Testing Suite",
+      "description": "Develop a comprehensive automated testing suite for the MailZila application that includes unit tests, integration tests, and end-to-end tests to ensure code quality and prevent regressions.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-20",
+      "related_feature": "Testing",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Testing strategy overview:\n- Unit tests: PHPUnit for backend components\n- Integration tests: Test API endpoints and service interactions\n- End-to-end tests: Playwright for browser automation\n- Visual regression tests: Compare screenshots for UI changes\n- Set up CI/CD pipeline with GitHub Actions",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Priority test coverage areas:\n1. Task CRUD operations\n2. Version management features\n3. Filtering and search functionality\n4. Task reporting features\n5. Critical user journeys\n6. Authentication and authorization\n7. Data validation and error handling",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Implementation plan:\n- Set up testing environment with dedicated test database\n- Create test factories for generating test data\n- Implement base test classes for common functionality\n- Set up GitHub Actions workflow for continuous testing\n- Configure code coverage reporting\n- Establish coding standards for test code\n- Create documentation for test maintenance",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "testing,quality,CI/CD,automation",
+      "estimated_hours": 40,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 23,
+      "title": "Performance Optimization for Large Task Sets",
+      "description": "Improve application performance when handling large task datasets by implementing caching, optimizing database queries, and introducing lazy loading techniques.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-05",
+      "related_feature": "Performance",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Performance bottlenecks identified:\n- Task listing page slow with >1000 tasks\n- Dashboard statistics calculation intensive\n- Repeated queries for common data\n- Inefficient filters implementation\n- Large payload size for task list API\n- Reports generation taking too long",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Optimization strategies:\n1. Implement Redis caching for dashboard statistics\n2. Optimize JSON structure for task storage\n3. Add database indexes for common filter fields\n4. Implement infinite scroll with pagination\n5. Create denormalized task_stats table for quicker aggregation\n6. Use eager loading for task relationships\n7. Add API response compression\n8. Implement request debouncing for filter changes",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Benchmarking approach:\n- Create performance testing scripts to simulate high load\n- Establish baseline metrics for key operations\n- Define performance budgets for important pages\n- Implement monitoring for query execution times\n- Create performance dashboard for tracking improvements",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "performance,optimization,caching,backend",
+      "estimated_hours": 28,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 24,
+      "title": "Advanced Search and Filtering System",
+      "description": "Develop a comprehensive search and filtering system with full-text search capabilities, saved filters, and advanced query options for task management.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-15",
+      "related_feature": "Search",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Technical requirements:\n- Implement Laravel Scout with a search driver (Elasticsearch or Meilisearch)\n- Create full-text indexing for task content\n- Design advanced search query parser\n- Develop saved search feature with sharing capabilities\n- Implement typeahead suggestions\n- Create visual query builder interface",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Search capabilities to implement:\n- Full-text search across all task fields\n- Natural language date queries (\"due before next Friday\")\n- Tag-based filtering with autocomplete\n- Complex boolean queries (AND, OR, NOT operators)\n- Saved searches with optional notifications\n- Search results highlighting\n- Search analytics to improve relevance",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "User interface considerations:\n- Create intuitive filter builder with visual cues\n- Design mobile-friendly search interface\n- Implement keyboard shortcuts for power users\n- Add search history and suggested searches\n- Create shareable search URLs\n- Design search results view with customizable columns",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "search,filters,full-text,user-experience",
+      "estimated_hours": 35,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 25,
+      "title": "User Roles and Permissions System",
+      "description": "Implement a comprehensive role-based access control system with customizable permissions for different user roles and task types.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-30",
+      "related_feature": "Security",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "System design considerations:\n- Create hierarchical role system (admin, manager, team lead, user)\n- Implement fine-grained permissions for task operations\n- Design team/department based access controls\n- Create permission inheritance structure\n- Implement permission caching for performance\n- Add audit logging for permission changes",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Core permissions to implement:\n- Task creation/viewing/editing/deletion\n- Report generation and viewing\n- User management\n- Version control operations\n- System configuration\n- Task assignment\n- Comment management\n- Export capabilities\n- Dashboard customization",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "UI considerations:\n- Design permission management interface\n- Create role assignment workflow\n- Implement visual indicators for limited permissions\n- Add custom error messages for permission denied\n- Design permission request workflow\n- Create UI for temporary permission delegation",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "security,permissions,roles,access-control",
+      "estimated_hours": 45,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 26,
+      "title": "Task Templates and Workflow System",
+      "description": "Create a template-based system for defining common task types and workflows, allowing for quick creation of standardized tasks and automated task progression.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-06-10",
+      "related_feature": "Workflow",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Template system requirements:\n- Create template data structure with variable placeholders\n- Design template management interface\n- Implement template versioning\n- Add template categories and tags\n- Create template sharing capabilities\n- Design template approval workflow\n- Implement batch task creation from templates",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Workflow capabilities to implement:\n- Visual workflow designer\n- Conditional task progression\n- Automatic task assignment rules\n- Status transition requirements\n- Approval workflows with multiple approvers\n- Escalation paths for blocked tasks\n- SLA tracking for task progression\n- Notification triggers at workflow stages",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Integration considerations:\n- Template import/export functionality\n- API for programmatic template usage\n- Integration with existing task system\n- Backwards compatibility with existing tasks\n- Migration path for converting existing tasks to templates\n- Template analytics to track effectiveness",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "templates,workflow,automation,productivity",
+      "estimated_hours": 38,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 27,
+      "title": "Data Export and API Integration",
+      "description": "Enhance data export capabilities with multiple formats and create a comprehensive API for third-party integrations with the task management system.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-05-20",
+      "related_feature": "Integration",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Export capabilities to implement:\n- PDF export with customizable templates\n- Excel export with data filtering options\n- CSV export with field selection\n- iCalendar export for task due dates\n- Markdown export for documentation\n- JSON export with full data structure\n- Regularly scheduled exports via email\n- Bulk export functionality",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "API design considerations:\n- Create RESTful API with comprehensive documentation\n- Implement OAuth2 authentication\n- Design rate limiting strategy\n- Create webhook system for real-time updates\n- Add versioning for API endpoints\n- Implement comprehensive error handling\n- Design pagination for large result sets\n- Add field filtering capabilities",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Integration targets:\n- Calendar applications (Google Calendar, Outlook)\n- Project management tools (Jira, Asana, Trello)\n- Communication platforms (Slack, Microsoft Teams)\n- Time tracking systems\n- Document management systems\n- CRM platforms\n- Custom internal systems\n- Mobile applications",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "export,API,integration,third-party",
+      "estimated_hours": 42,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 28,
+      "title": "Analytics Dashboard and Reporting",
+      "description": "Develop a comprehensive analytics dashboard with customizable widgets, interactive charts, and detailed reporting on task performance, team productivity, and project progress.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-04-20T14:00:00Z",
+      "updated_at": "2025-04-20T14:00:00Z",
+      "due_date": "2025-06-05",
+      "related_feature": "Analytics",
+      "related_phase": "P4-ADVANCED",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [
+        {
+          "content": "Dashboard components to implement:\n- Customizable widget system\n- Drag-and-drop dashboard layout\n- Personal and team dashboards\n- KPI tracking with targets and trends\n- Time-range selectors (day, week, month, custom)\n- Interactive charts with drill-down capability\n- Data export from dashboard components\n- Dashboard sharing and publishing",
+          "timestamp": "2025-04-20T14:05:00Z"
+        },
+        {
+          "content": "Analytics metrics to track:\n- Task completion rates by user/team\n- Average completion time by task type\n- Estimation accuracy tracking\n- Bottleneck identification\n- Workload distribution analysis\n- Deadline compliance metrics\n- Tag and category analysis\n- Historical trend analysis\n- Predictive completion forecasting",
+          "timestamp": "2025-04-20T14:10:00Z"
+        },
+        {
+          "content": "Technical approach:\n- Implement data warehouse for analytics\n- Create ETL process for aggregating task data\n- Use Chart.js and D3.js for visualizations\n- Design responsive dashboard components\n- Implement data caching for dashboard performance\n- Create scheduled report generation\n- Design print-friendly report layouts\n- Implement dashboard templates for quick setup",
+          "timestamp": "2025-04-20T14:15:00Z"
+        }
+      ],
+      "tags": "analytics,dashboard,reporting,metrics,visualization",
+      "estimated_hours": 48,
+      "actual_hours": 0,
+      "version": "1.1.0"
+    },
+    {
+      "id": 29,
+      "title": "Implement GitHub integration",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: Added GitHub integration with two-way sync for tasks and issues\nType: feature\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T21:31:35Z",
+      "updated_at": "2025-04-19T21:31:35Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "feature,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 30,
+      "title": "Set up automatic task creation system",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: [automation] Set up auto task creation with Git hooks\nType: implement\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T21:32:30Z",
+      "updated_at": "2025-04-19T21:32:30Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "implement,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 31,
+      "title": "Implement GitHub issues integration",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: Add GitHub issues integration with task manager\nType: feature\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T21:32:55Z",
+      "updated_at": "2025-04-19T21:32:55Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "feature,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 32,
+      "title": "Release version 1.0.9 with GitHub integration",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: Release v1.0.9\nType: release\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T21:33:00Z",
+      "updated_at": "2025-04-19T21:33:00Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "release,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 33,
+      "title": "Fix missing database backups",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: Created fix-backups.sh script to ensure all versions have database backups\nType: fix\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-19T21:33:06Z",
+      "updated_at": "2025-04-19T21:33:06Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "fix,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 34,
+      "title": "Document auto task creation system",
+      "description": "Automatically generated task from commit 7a56f70.\n\nCommit Message: Created documentation for the auto task creation system\nType: document\nChanged Files:\n- README.md\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T21:33:16Z",
+      "updated_at": "2025-04-19T21:33:16Z",
+      "due_date": null,
+      "related_feature": "README.md",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [
+        {
+          "content": "The auto task creation system has been fully set up and documented. It now automatically creates tasks from Git commits and can be manually triggered for specific work items. The system includes proper integration with Git hooks and ensures all work is properly tracked in the task management system.",
+          "timestamp": "2025-04-19T21:33:16Z"
+        }
+      ],
+      "tags": "document,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 35,
+      "title": "Fix auto task creation and document the system",
+      "description": "Automatically generated task from commit 61cfa7e.\n\nCommit Message: Fix auto task creation and document the system\nType: fix\nChanged Files:\n- project-management/AUTO-TASKS.md\n- project-management/tasks.json\n- project-management/tasks.json.bak\n- scripts/setup-auto-tasks.sh\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-19T21:34:24Z",
+      "updated_at": "2025-04-19T21:34:24Z",
+      "due_date": null,
+      "related_feature": "project-management",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "fix,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 36,
+      "title": "Fix GitHub issue synchronization status",
+      "description": "Automatically generated task from commit 61cfa7e.\n\nCommit Message: Fix auto task creation and document the system\nType: fix\nChanged Files:\n- project-management/AUTO-TASKS.md\n- project-management/tasks.json\n- project-management/tasks.json.bak\n- scripts/setup-auto-tasks.sh\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "medium",
+      "created_at": "2025-04-19T22:30:45Z",
+      "updated_at": "2025-04-19T22:30:45Z",
+      "due_date": null,
+      "related_feature": "project-management",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "fix,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": 38,
+      "title": "Consolidate Task Management components",
+      "description": "This task was auto-generated based on git commit analysis.\n\nThe following files related to Task Management have been changed frequently:\n- project-management/tasks.json\n\nConsider reviewing these files for potential improvements, standardization, or refactoring opportunities.",
+      "status": "pending",
+      "priority": "low",
+      "assignee": "ai",
+      "created_at": "2025-04-19T22:30:50+00:00",
+      "updated_at": "2025-04-19T22:30:50+00:00",
+      "due_date": "2025-05-03T22:30:50+00:00",
+      "progress": 0,
+      "feature": "Task Management",
+      "phase": "planning",
+      "estimated_hours": 2,
+      "actual_hours": 0,
+      "tags": [
+        "ai-generated",
+        "Task Management",
+        "low"
+      ],
+      "notes": [],
+      "version": null,
+      "dependencies": [],
+      "is_ai_generated": true
+    },
+    {
+      "id": 39,
+      "title": "Consolidate Core components",
+      "description": "This task was auto-generated based on git commit analysis.\n\nThe following files related to Core have been changed frequently:\n- version.json\n\nConsider reviewing these files for potential improvements, standardization, or refactoring opportunities.",
+      "status": "pending",
+      "priority": "medium",
+      "assignee": "ai",
+      "created_at": "2025-04-19T22:30:50+00:00",
+      "updated_at": "2025-04-19T22:30:50+00:00",
+      "due_date": "2025-05-03T22:30:50+00:00",
+      "progress": 0,
+      "feature": "Core",
+      "phase": "planning",
+      "estimated_hours": 2,
+      "actual_hours": 0,
+      "tags": [
+        "ai-generated",
+        "Core",
+        "medium"
+      ],
+      "notes": [],
+      "version": null,
+      "dependencies": [],
+      "is_ai_generated": true
+    },
+    {
+      "id": 40,
+      "title": "Refactor Configuration components",
+      "description": "This task was auto-generated based on git commit analysis.\n\nThe following files related to Configuration have been changed frequently:\n- config/app.php\n\nConsider reviewing these files for potential improvements, standardization, or refactoring opportunities.",
+      "status": "pending",
+      "priority": "low",
+      "assignee": "ai",
+      "created_at": "2025-04-19T22:30:50+00:00",
+      "updated_at": "2025-04-19T22:30:50+00:00",
+      "due_date": "2025-05-03T22:30:50+00:00",
+      "progress": 0,
+      "feature": "Configuration",
+      "phase": "planning",
+      "estimated_hours": 2,
+      "actual_hours": 0,
+      "tags": [
+        "ai-generated",
+        "Configuration",
+        "low"
+      ],
+      "notes": [],
+      "version": null,
+      "dependencies": [],
+      "is_ai_generated": true
+    },
+    {
+      "id": 1,
+      "title": "Set up automatic task creation system",
+      "description": "Automatically generated task from commit 61cfa7e.\n\nCommit Message: [automation] Set up auto task creation with Git hooks\nType: implement\nChanged Files:\n- project-management/AUTO-TASKS.md\n- project-management/tasks.json\n- project-management/tasks.json.bak\n- scripts/setup-auto-tasks.sh\n",
+      "assignee": "user",
+      "status": "completed",
+      "priority": "low",
+      "created_at": "2025-04-19T22:30:54Z",
+      "updated_at": "2025-04-19T22:30:54Z",
+      "due_date": null,
+      "related_feature": "project-management",
+      "related_phase": "implementation",
+      "dependencies": [],
+      "progress": 100,
+      "notes": [],
+      "tags": "implement,auto-created",
+      "estimated_hours": 0,
+      "actual_hours": 0,
+      "version": "1.0.9"
+    },
+    {
+      "id": null,
+      "title": "Implement Modular Installation Package",
+      "description": "Create a Composer package for TaskUnity core functionality that can be installed in any project, with auto-registration of services and configuration system that detects standalone or hub mode.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T17:46:05Z",
+      "updated_at": "2025-04-20T17:46:05Z",
+      "due_date": "2025-06-01",
+      "related_feature": "TaskUnity",
+      "related_phase": "P4-TASKUNITY",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [],
+      "tags": [
+        "modular",
+        "installation",
+        "package"
+      ],
+      "estimated_hours": 40,
+      "actual_hours": 0
+    },
+    {
+      "id": 1,
+      "title": "Develop Task Synchronization System",
+      "description": "Build a bidirectional sync protocol between independent projects and central hub with unique task IDs, conflict resolution strategies, and webhook endpoints for real-time change propagation.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T17:46:10Z",
+      "updated_at": "2025-04-20T17:46:10Z",
+      "due_date": "2025-06-15",
+      "related_feature": "TaskUnity",
+      "related_phase": "P4-TASKUNITY",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [],
+      "tags": [
+        "synchronization",
+        "bidirectional",
+        "webhook"
+      ],
+      "estimated_hours": 50,
+      "actual_hours": 0
+    },
+    {
+      "id": 2,
+      "title": "Implement AI Assistance Features",
+      "description": "Enhance the current AI integration with LLM-based task prioritization, automatic task assignment based on developer skills, predictive analytics for sprint planning, and AI workflows that learn from past project patterns.",
+      "assignee": "user",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-04-20T17:46:14Z",
+      "updated_at": "2025-04-20T17:46:14Z",
+      "due_date": "2025-07-01",
+      "related_feature": "TaskUnity",
+      "related_phase": "P4-TASKUNITY",
+      "dependencies": [],
+      "progress": 0,
+      "notes": [],
+      "tags": [
+        "ai",
+        "machine-learning",
+        "automation"
+      ],
+      "estimated_hours": 60,
+      "actual_hours": 0
+    }
+  ],
+  "next_id": 3
+}

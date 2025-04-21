@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# MailZila Version Systems Integration
+# Task Version Systems Integration
 # This script integrates the GitHub version system with the existing version manager
 
 set -e
@@ -96,7 +96,7 @@ function create_wrapper() {
     # Create wrapper script
     cat > ./scripts/version-update.sh << 'EOF'
 #!/bin/bash
-# MailZila version update wrapper
+# Task version update wrapper
 
 # This wrapper integrates local version management with GitHub
 
@@ -157,7 +157,7 @@ case "$1" in
         sync_all_versions
         ;;
     *)
-        echo "MailZila Version Systems Integration"
+        echo "Task Version Systems Integration"
         echo "Usage:"
         echo "  $0 sync-all                Synchronize all versions with GitHub"
         echo "  $0 update [type] [notes] [skip_git]  Update version and sync with GitHub"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ========================================================
-# Auto Task Creator for MailZila
+# Auto Task Creator for Task
 # ========================================================
 #
 # This script automatically creates tasks based on git commits

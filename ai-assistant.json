@@ -1,6 +1,6 @@
 {
   "assistant": {
-    "name": "MailZila Dev Assistant",
+    "name": "Task Dev Assistant",
     "version": "1.0.0",
     "responsibilities": [
       {"id": "AI-RM-001", "type": "roadmap_monitoring", "check_frequency": "daily", "description": "Track and report on roadmap phases and progress"},

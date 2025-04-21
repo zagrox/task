@@ -1,6 +1,6 @@
-# MailZila Development Workflow
+# Task Development Workflow
 
-This document outlines the complete development workflow for the MailZila project, including the integration of AI Agent capabilities at each step.
+This document outlines the complete development workflow for the Task project, including the integration of AI Agent capabilities at each step.
 
 ## Workflow Steps
 
@@ -60,7 +60,7 @@ This document outlines the complete development workflow for the MailZila projec
 
 ## AI Agent Responsibilities
 
-The MailZila AI Agent provides continuous support through the following responsibilities:
+The Task AI Agent provides continuous support through the following responsibilities:
 
 | ID | Type | Description | Frequency |
 |----|------|-------------|-----------|

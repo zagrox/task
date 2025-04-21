@@ -1,6 +1,6 @@
-# MailZila Project Roadmap & Version Control System
+# Task Project Roadmap & Version Control System
 
-This document outlines our comprehensive version control strategy and roadmap for the MailZila project.
+This document outlines our comprehensive version control strategy and roadmap for the Task project.
 
 ## Project Version Control Architecture
 
@@ -116,7 +116,7 @@ git tag -a "v$VERSION" -m "$NOTES"
 # Create database backup
 BACKUP_DIR="backups/v$VERSION"
 mkdir -p "$BACKUP_DIR"
-php artisan db:dump --database="$BACKUP_DIR/mailzila_v${VERSION}.sql"
+php artisan db:dump --database="$BACKUP_DIR/task_v${VERSION}.sql"
 
 # Update Laravel version if needed
 sed -i '' "s/'version' => '.*'/'version' => '$VERSION'/g" config/app.php
@@ -183,7 +183,7 @@ BACKUP_DIR="backups/snapshots/v$VERSION"
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-php artisan db:dump --database="$BACKUP_DIR/mailzila_v${VERSION}_${TIMESTAMP}.sql"
+php artisan db:dump --database="$BACKUP_DIR/task_v${VERSION}_${TIMESTAMP}.sql"
 
 # Backup .env
 cp .env "$BACKUP_DIR/.env.backup"
@@ -210,7 +210,7 @@ echo "Backup completed: $BACKUP_DIR"
 
 # Optional - upload to external storage
 if command -v rclone &> /dev/null; then
-  rclone copy "$BACKUP_DIR" remote:mailzila-backups/v$VERSION
+  rclone copy "$BACKUP_DIR" remote:task-backups/v$VERSION
   echo "Uploaded to remote storage"
 fi
 ```
@@ -341,14 +341,14 @@ exit 0
 Clear documentation for project restoration:
 
 ```markdown
-# Restoration Guide for MailZila
+# Restoration Guide for Task
 
 ## To restore code to a specific version:
 1. `git checkout v1.0.0` (replace with your version tag)
 
 ## To restore database:
 1. `php artisan migrate:fresh`
-2. `mysql -u username -p mailzila < backups/snapshots/v1.0.0/mailzila_v1.0.0_20230101_120000.sql`
+2. `mysql -u username -p task < backups/snapshots/v1.0.0/task_v1.0.0_20230101_120000.sql`
 
 ## To restore complete snapshot including storage:
 1. `git checkout tags/v1.0.0`
@@ -406,7 +406,7 @@ This step integrates an AI assistant into the development workflow to provide co
 // ai-assistant.json configuration
 {
   "assistant": {
-    "name": "MailZila Dev Assistant",
+    "name": "Task Dev Assistant",
     "version": "1.0.0",
     "responsibilities": [
       {"id": "AI-RM-001", "type": "roadmap_monitoring", "check_frequency": "daily"},

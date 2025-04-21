@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to install MailZila git hooks
+# Script to install Task git hooks
 #
 
 # Get the current directory
@@ -19,7 +19,7 @@ echo_color() {
   echo -e "${2}${1}${NC}"
 }
 
-echo_color "Installing MailZila git hooks..." "$BLUE"
+echo_color "Installing Task git hooks..." "$BLUE"
 
 # Check if .git/hooks directory exists
 if [ ! -d "$PROJECT_ROOT/.git/hooks" ]; then

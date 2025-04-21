@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - MailZila Task Manager</title>
+    <title>@yield('title') - Task Manager</title>
     
     <!-- Bootstrap 5.3.0 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -202,7 +202,7 @@
         <div class="container">
             <a class="navbar-brand" href="{{ route('tasks.index') }}">
                 <i class="fas fa-tasks me-2"></i>
-                MailZila Tasks
+                Task Manager
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -239,7 +239,7 @@
                             <i class="fas fa-user-circle me-1"></i> User
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i> Settings</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('user.settings') ? 'active' : '' }}" href="{{ route('user.settings') }}"><i class="fas fa-user-cog me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                         </ul>
@@ -276,7 +276,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="mb-0">&copy; {{ date('Y') }} MailZila. All rights reserved.</p>
+                    <p class="mb-0">&copy; {{ date('Y') }} Task. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0">Version {{ config('app.version') }}</p>

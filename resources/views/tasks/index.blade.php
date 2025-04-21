@@ -16,7 +16,7 @@
             <a href="{{ route('tasks.report') }}" class="btn btn-outline-primary ms-2">
                 <i class="fas fa-chart-bar me-1"></i> Reports
             </a>
-            <a href="{{ route('tasks.index') }}?sync_to_github=pending" class="btn btn-dark ms-2">
+            <a href="{{ route('tasks.index') }}?sync_to_github=all" class="btn btn-dark ms-2">
                 <i class="fab fa-github me-1"></i> Sync to GitHub
             </a>
         </div>
@@ -48,7 +48,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                 Completed Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $completedTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'completed'; })) }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $completedTasks }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -67,12 +67,11 @@
                                 In Progress</div>
                             <div class="row no-gutters align-items-center">
                                 <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ $inProgressTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'in-progress'; })) }}</div>
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ $inProgressTasks }}</div>
                                 </div>
                                 <div class="col">
                                     <div class="progress progress-sm mr-2">
-                                        <div class="progress-bar bg-info" role="progressbar" 
-                                            style="width: {{ $inProgressPercentage ?? (count($tasks) > 0 ? (count(array_filter($tasks, function($t) { return $t['status'] == 'in-progress'; })) / count($tasks) * 100) : 0) }}%"></div>
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ $inProgressPercentage }}%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -92,7 +91,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                 Pending Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'pending'; })) }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingTasks }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
@@ -112,10 +111,10 @@
                     <h6 class="m-0 font-weight-bold text-primary">Tasks</h6>
                     <div class="d-flex">
                         <div class="me-3">
-                            <span class="badge bg-success me-1">{{ $completedTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'completed'; })) }}</span> Completed
-                            <span class="badge bg-info mx-1">{{ $inProgressTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'in-progress'; })) }}</span> In Progress
-                            <span class="badge bg-secondary mx-1">{{ $pendingTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'pending'; })) }}</span> Pending
-                            <span class="badge bg-danger mx-1">{{ $blockedTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'blocked'; })) }}</span> Blocked
+                            <span class="badge bg-success me-1">{{ $completedTasks }}</span> Completed
+                            <span class="badge bg-info mx-1">{{ $inProgressTasks }}</span> In Progress
+                            <span class="badge bg-secondary mx-1">{{ $pendingTasks }}</span> Pending
+                            <span class="badge bg-danger mx-1">{{ $blockedTasks }}</span> Blocked
                         </div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -160,32 +159,32 @@
                             <tbody>
                                 @forelse($tasks as $task)
                                 <tr>
-                                    <td class="ps-3">{{ $task['id'] }}</td>
+                                    <td class="ps-3">{{ $task->id }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="task-icon me-2">
-                                                @if($task['status'] === 'completed')
+                                                @if($task->status === 'completed')
                                                     <i class="fas fa-check-circle text-success"></i>
-                                                @elseif($task['status'] === 'in-progress')
+                                                @elseif($task->status === 'in-progress')
                                                     <i class="fas fa-spinner text-info"></i>
-                                                @elseif($task['status'] === 'blocked')
+                                                @elseif($task->status === 'blocked')
                                                     <i class="fas fa-ban text-danger"></i>
-                                                @elseif($task['status'] === 'review')
+                                                @elseif($task->status === 'review')
                                                     <i class="fas fa-search text-primary"></i>
                                                 @else
                                                     <i class="fas fa-circle text-secondary"></i>
                                                 @endif
                                             </div>
                                             <div>
-                                                <a href="{{ route('tasks.show', $task['id']) }}" class="fw-medium text-dark">
-                                                    {{ $task['title'] }}
+                                                <a href="{{ route('tasks.show', $task->id) }}" class="fw-medium text-dark">
+                                                    {{ $task->title }}
                                                 </a>
-                                                @if(isset($task['version']) && $task['version'])
-                                                    <span class="badge bg-secondary ms-1">v{{ $task['version'] }}</span>
+                                                @if(isset($task->version) && $task->version)
+                                                    <span class="badge bg-secondary ms-1">v{{ $task->version }}</span>
                                                 @endif
                                                 <div class="small text-muted">
-                                                    @if(isset($task['related_feature']) && $task['related_feature'])
-                                                        <span class="text-muted">{{ $task['related_feature'] }}</span>
+                                                    @if(isset($task->related_feature) && $task->related_feature)
+                                                        <span class="text-muted">{{ $task->related_feature }}</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -193,37 +192,37 @@
                                     </td>
                                     <td>
                                         <span class="badge 
-                                            @if($task['status'] == 'completed') bg-success 
-                                            @elseif($task['status'] == 'in-progress') bg-info 
-                                            @elseif($task['status'] == 'blocked') bg-danger
-                                            @elseif($task['status'] == 'review') bg-primary
+                                            @if($task->status == 'completed') bg-success 
+                                            @elseif($task->status == 'in-progress') bg-info 
+                                            @elseif($task->status == 'blocked') bg-danger
+                                            @elseif($task->status == 'review') bg-primary
                                             @else bg-secondary @endif">
-                                            {{ ucfirst($task['status']) }}
+                                            {{ ucfirst($task->status) }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="badge 
-                                            @if($task['priority'] == 'high') bg-danger 
-                                            @elseif($task['priority'] == 'medium') bg-warning text-dark
+                                            @if($task->priority == 'high') bg-danger 
+                                            @elseif($task->priority == 'medium') bg-warning text-dark
                                             @else bg-info @endif">
-                                            {{ ucfirst($task['priority']) }}
+                                            {{ ucfirst($task->priority) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge @if($task['assignee'] == 'ai') bg-purple @else bg-primary @endif">
-                                            {{ ucfirst($task['assignee']) }}
+                                        <span class="badge @if($task->assignee == 'ai') bg-purple @else bg-primary @endif">
+                                            {{ ucfirst($task->assignee) }}
                                         </span>
                                     </td>
                                     <td>
-                                        @if(isset($task['due_date']) && $task['due_date'])
+                                        @if(isset($task->due_date) && $task->due_date)
                                             <span class="
-                                                @if(strtotime($task['due_date']) < strtotime('today') && $task['status'] != 'completed') 
+                                                @if($task->due_date->isPast() && $task->status != 'completed') 
                                                     text-danger fw-bold
-                                                @elseif(strtotime($task['due_date']) == strtotime('today')) 
+                                                @elseif($task->due_date->isToday()) 
                                                     text-warning fw-bold
                                                 @endif
                                             ">
-                                                {{ date('M d, Y', strtotime($task['due_date'])) }}
+                                                {{ $task->due_date->format('M d, Y') }}
                                             </span>
                                         @else
                                             <span class="text-muted">—</span>
@@ -231,13 +230,13 @@
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group">
-                                            <a href="{{ route('tasks.show', $task['id']) }}" 
+                                            <a href="{{ route('tasks.show', $task->id) }}" 
                                                class="btn btn-sm btn-outline-primary" 
                                                data-bs-toggle="tooltip" 
                                                title="View Task">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('tasks.edit', $task['id']) }}" 
+                                            <a href="{{ route('tasks.edit', $task->id) }}" 
                                                class="btn btn-sm btn-outline-secondary"
                                                data-bs-toggle="tooltip" 
                                                title="Edit Task">
@@ -246,7 +245,7 @@
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-danger"
                                                     data-bs-toggle="modal"
-                                                    data-bs-target="#deleteTaskModal{{ $task['id'] }}"
+                                                    data-bs-target="#deleteTaskModal{{ $task->id }}"
                                                     data-bs-toggle="tooltip" 
                                                     title="Delete Task">
                                                 <i class="fas fa-trash"></i>
@@ -254,7 +253,7 @@
                                         </div>
                                         
                                         <!-- Delete Modal -->
-                                        <div class="modal fade" id="deleteTaskModal{{ $task['id'] }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal fade" id="deleteTaskModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
@@ -262,11 +261,11 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        Are you sure you want to delete the task: <strong>{{ $task['title'] }}</strong>?
+                                                        Are you sure you want to delete the task: <strong>{{ $task->title }}</strong>?
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <form action="{{ route('tasks.destroy', $task['id']) }}" method="POST" class="d-inline">
+                                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-danger">Delete</button>
@@ -309,12 +308,8 @@
                         </div>
                         <div class="d-flex align-items-center">
                             @php
-                                $upcomingTasksFiltered = $upcomingTasks ?? array_filter($tasks, function($t) {
-                                    return isset($t['due_date']) && $t['due_date'] && 
-                                           strtotime($t['due_date']) >= strtotime('today') && 
-                                           strtotime($t['due_date']) <= strtotime('+7 days') &&
-                                           $t['status'] != 'completed';
-                                });
+                                // No need for filtering here since we have upcomingTasks from the controller
+                                $upcomingTasksFiltered = $upcomingTasks;
                             @endphp
                             <button type="button" class="btn btn-sm btn-outline-info me-2" data-bs-toggle="tooltip" title="Upcoming Tasks (Due in 7 days)">
                                 <i class="fas fa-calendar-day me-1"></i> {{ count($upcomingTasksFiltered) }} Upcoming
@@ -408,28 +403,28 @@
                         <div class="progress-item">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>High Priority</span>
-                                <span class="text-danger">{{ $highPriorityTasks ?? count(array_filter($tasks, function($t) { return $t['priority'] == 'high'; })) }}</span>
+                                <span class="text-danger">{{ $highPriorityTasks }}</span>
                             </div>
                             <div class="progress mb-3" style="height: 8px;">
-                                <div class="progress-bar bg-danger" style="width: {{ $highPriorityPercentage ?? (count($tasks) > 0 ? (count(array_filter($tasks, function($t) { return $t['priority'] == 'high'; })) / count($tasks) * 100) : 0) }}%"></div>
+                                <div class="progress-bar bg-danger" style="width: {{ $highPriorityPercentage }}%"></div>
                             </div>
                         </div>
                         <div class="progress-item">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>Medium Priority</span>
-                                <span class="text-warning">{{ $mediumPriorityTasks ?? count(array_filter($tasks, function($t) { return $t['priority'] == 'medium'; })) }}</span>
+                                <span class="text-warning">{{ $mediumPriorityTasks }}</span>
                             </div>
                             <div class="progress mb-3" style="height: 8px;">
-                                <div class="progress-bar bg-warning" style="width: {{ $mediumPriorityPercentage ?? (count($tasks) > 0 ? (count(array_filter($tasks, function($t) { return $t['priority'] == 'medium'; })) / count($tasks) * 100) : 0) }}%"></div>
+                                <div class="progress-bar bg-warning" style="width: {{ $mediumPriorityPercentage }}%"></div>
                             </div>
                         </div>
                         <div class="progress-item">
                             <div class="d-flex justify-content-between mb-1">
                                 <span>Low Priority</span>
-                                <span class="text-info">{{ $lowPriorityTasks ?? count(array_filter($tasks, function($t) { return $t['priority'] == 'low'; })) }}</span>
+                                <span class="text-info">{{ $lowPriorityTasks }}</span>
                             </div>
                             <div class="progress mb-3" style="height: 8px;">
-                                <div class="progress-bar bg-info" style="width: {{ $lowPriorityPercentage ?? (count($tasks) > 0 ? (count(array_filter($tasks, function($t) { return $t['priority'] == 'low'; })) / count($tasks) * 100) : 0) }}%"></div>
+                                <div class="progress-bar bg-info" style="width: {{ $lowPriorityPercentage }}%"></div>
                             </div>
                         </div>
                     </div>
@@ -448,11 +443,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusCtx = document.getElementById('taskStatusChart').getContext('2d');
     
     @php
-        $completedCount = $completedTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'completed'; }));
-        $inProgressCount = $inProgressTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'in-progress'; }));
-        $pendingCount = $pendingTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'pending'; }));
-        $blockedCount = $blockedTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'blocked'; }));
-        $reviewCount = $reviewTasks ?? count(array_filter($tasks, function($t) { return $t['status'] == 'review'; }));
+        // Use the pre-calculated values from the controller
+        $completedCount = $completedTasks;
+        $inProgressCount = $inProgressTasks;
+        $pendingCount = $pendingTasks;
+        $blockedCount = $blockedTasks;
+        $reviewCount = $reviewTasks;
     @endphp
     
     const statusData = {

@@ -1,6 +1,6 @@
 # Project Management System
 
-This document outlines the integrated task management system used in MailZila for tracking tasks, progress and coordinating work between team members and AI assistance.
+This document outlines the integrated task management system used in Task for tracking tasks, progress and coordinating work between team members and AI assistance.
 
 ## Overview
 

@@ -349,6 +349,6 @@ simulated_changes() {
             
         *)
             echo "No specific changes simulated for version $version"
-            ;;
-    esac
+        ;;
+esac 
 } 

@@ -81,11 +81,21 @@ class GitHubService
      */
     public function syncTaskToGitHub(int $taskId): ?GitHubIssue
     {
+        // Add debug logging
+        Log::info("Starting GitHub sync for task #{$taskId}");
+        
         // Load the task from tasks.json
         $githubIssue = GitHubIssue::firstOrNew(['task_id' => $taskId]);
         
+        Log::info("GitHub issue model created/loaded", [
+            'is_new' => !$githubIssue->exists,
+            'issue_number' => $githubIssue->issue_number,
+            'repository' => $githubIssue->repository ?: $this->repository
+        ]);
+        
         if (!$githubIssue->repository) {
             $githubIssue->repository = $this->repository;
+            Log::info("Set repository to {$this->repository}");
         }
         
         $task = $githubIssue->getTask();
@@ -95,15 +105,30 @@ class GitHubService
             return null;
         }
         
+        Log::info("Task found", ['title' => $task['title']]);
+        
         try {
             $repo = $this->parseRepository($githubIssue->repository);
+            Log::info("Parsed repository", ['owner' => $repo['owner'], 'repo' => $repo['repo']]);
+            
+            // Prepare issue body with monitoring note
+            $body = $githubIssue->getIssueBodyFromTask();
+            $body .= "\n\n> **Note**: GitHub issues are used for monitoring only. Primary task management happens in the task manager system. ";
+            $body .= "All tasks appear with 'user' assignee in GitHub for simplicity, regardless of actual assignee in the task manager.";
             
             // Prepare issue data
             $issueData = [
                 'title' => $task['title'],
-                'body' => $githubIssue->getIssueBodyFromTask(),
+                'body' => $body,
                 'labels' => $githubIssue->getLabelsFromTask(),
             ];
+            
+            // Set issue state based on task status
+            if ($task['status'] === 'completed') {
+                $issueData['state'] = 'closed';
+            } else {
+                $issueData['state'] = 'open';
+            }
             
             // If issue doesn't exist yet, create it
             if (!$githubIssue->issue_number) {
