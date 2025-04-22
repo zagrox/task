@@ -1,8 +1,23 @@
 {
     "major": 1,
-    "minor": 1,
-    "patch": 0,
+    "minor": 2,
+    "patch": 1,
     "history": [
+        {
+            "version": "1.2.1",
+            "date": "2025-04-22",
+            "notes": "Modernized task reports page with improved visualizations and mobile responsive layout"
+        },
+        {
+            "version": "1.2.0",
+            "date": "2025-04-21",
+            "notes": "Implemented database migration for tasks and added model relationships"
+        },
+        {
+            "version": "1.1.1",
+            "date": "2025-04-21",
+            "notes": "Fixed task ID sequencing and implemented validation to prevent ID gaps"
+        },
         {
             "version": "1.1.0",
             "date": "2025-04-21",
@@ -60,6 +75,9 @@
         }
     ],
     "previous_versions": [
+        "1.2.0",
+        "1.1.1",
+        "1.1.0",
         "1.0.9",
         "0.9.5",
         "0.9.0",
@@ -69,11 +87,14 @@
     "indexes": {
         "by_date": {
             "2025-04-18": 8,
-            "2025-04-20": 9
+            "2025-04-20": 9,
+            "2025-04-21": 10
         },
         "by_version": {
             "1.0.8": 8,
-            "1.0.9": 9
+            "1.0.9": 9,
+            "1.1.0": 10,
+            "1.1.1": 0
         }
     },
     "backups": [
