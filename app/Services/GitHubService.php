@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\GitHubIssue;
+use App\Models\Task;
+use App\Models\Tag;
 use Github\Client;
 use Github\Exception\RuntimeException;
 use Illuminate\Support\Facades\Log;
@@ -77,6 +79,29 @@ class GitHubService
     }
 
     /**
+     * Get repository from task tags
+     */
+    public function getRepositoryFromTask($task): ?string
+    {
+        // Check if task has tags
+        if (!isset($task['tags']) || !is_array($task['tags'])) {
+            return $this->repository;
+        }
+        
+        // Check for repo: tags
+        foreach ($task['tags'] as $tag) {
+            if (strpos($tag, 'repo:') === 0) {
+                // Extract repository name from tag (remove the "repo:" prefix)
+                $repoName = substr($tag, 5);
+                return $repoName;
+            }
+        }
+        
+        // Fall back to default repository
+        return $this->repository;
+    }
+    
+    /**
      * Synchronize a task to GitHub issue
      */
     public function syncTaskToGitHub(int $taskId): ?GitHubIssue
@@ -93,16 +118,19 @@ class GitHubService
             'repository' => $githubIssue->repository ?: $this->repository
         ]);
         
-        if (!$githubIssue->repository) {
-            $githubIssue->repository = $this->repository;
-            Log::info("Set repository to {$this->repository}");
-        }
-        
         $task = $githubIssue->getTask();
         
         if (!$task) {
             Log::error("Task #$taskId not found for GitHub sync");
             return null;
+        }
+        
+        // Get repository from task tags
+        $repository = $this->getRepositoryFromTask($task);
+        
+        if (!$githubIssue->repository) {
+            $githubIssue->repository = $repository;
+            Log::info("Set repository to {$repository}");
         }
         
         Log::info("Task found", ['title' => $task['title']]);
@@ -200,43 +228,56 @@ class GitHubService
                 return false;
             }
             
-            // Update task data
-            $taskData['tasks'][$taskIndex]['title'] = $issue['title'];
-            
-            // Update status based on issue state
-            if ($issue['state'] === 'closed') {
+            // Update task status if issue was closed or reopened
+            if ($issue['state'] === 'closed' && $taskData['tasks'][$taskIndex]['status'] !== 'completed') {
                 $taskData['tasks'][$taskIndex]['status'] = 'completed';
-                $taskData['tasks'][$taskIndex]['progress'] = 100;
-            } elseif ($issue['state'] === 'open') {
-                // Only change from completed to something else, don't override in-progress or other statuses
-                if ($taskData['tasks'][$taskIndex]['status'] === 'completed') {
-                    $taskData['tasks'][$taskIndex]['status'] = 'in-progress';
+                $taskData['tasks'][$taskIndex]['updated_at'] = Carbon::now()->toIso8601String();
+                
+                // Add a note about the change
+                if (!isset($taskData['tasks'][$taskIndex]['notes'])) {
+                    $taskData['tasks'][$taskIndex]['notes'] = [];
                 }
+                
+                $taskData['tasks'][$taskIndex]['notes'][] = [
+                    'text' => "Task marked as completed automatically due to GitHub issue being closed.",
+                    'created_at' => Carbon::now()->toIso8601String()
+                ];
+            } else if ($issue['state'] === 'open' && $taskData['tasks'][$taskIndex]['status'] === 'completed') {
+                $taskData['tasks'][$taskIndex]['status'] = 'in-progress';
+                $taskData['tasks'][$taskIndex]['updated_at'] = Carbon::now()->toIso8601String();
+                
+                // Add a note about the change
+                if (!isset($taskData['tasks'][$taskIndex]['notes'])) {
+                    $taskData['tasks'][$taskIndex]['notes'] = [];
+                }
+                
+                $taskData['tasks'][$taskIndex]['notes'][] = [
+                    'text' => "Task marked as in-progress automatically due to GitHub issue being reopened.",
+                    'created_at' => Carbon::now()->toIso8601String()
+                ];
             }
             
-            // Update priority and other metadata based on labels
-            if (!empty($issue['labels'])) {
-                foreach ($issue['labels'] as $label) {
-                    if (strpos($label['name'], 'priority:') === 0) {
-                        $priority = str_replace('priority:', '', $label['name']);
-                        $taskData['tasks'][$taskIndex]['priority'] = $priority;
-                    }
+            // Update task title if changed
+            if ($issue['title'] !== $taskData['tasks'][$taskIndex]['title']) {
+                $oldTitle = $taskData['tasks'][$taskIndex]['title'];
+                $taskData['tasks'][$taskIndex]['title'] = $issue['title'];
+                $taskData['tasks'][$taskIndex]['updated_at'] = Carbon::now()->toIso8601String();
+                
+                // Add a note about the change
+                if (!isset($taskData['tasks'][$taskIndex]['notes'])) {
+                    $taskData['tasks'][$taskIndex]['notes'] = [];
                 }
+                
+                $taskData['tasks'][$taskIndex]['notes'][] = [
+                    'text' => "Title updated via GitHub from '{$oldTitle}' to '{$issue['title']}'.",
+                    'created_at' => Carbon::now()->toIso8601String()
+                ];
             }
             
-            // Add a note about the GitHub sync
-            $taskData['tasks'][$taskIndex]['notes'][] = [
-                'content' => "Synchronized with GitHub issue #{$githubIssue->issue_number}: {$githubIssue->issue_url}",
-                'timestamp' => Carbon::now()->toIso8601String()
-            ];
-            
-            // Update task updated timestamp
-            $taskData['tasks'][$taskIndex]['updated_at'] = Carbon::now()->toIso8601String();
-            
-            // Save the updated tasks file
+            // Save changes to tasks file
             file_put_contents($tasksFile, json_encode($taskData, JSON_PRETTY_PRINT));
             
-            // Update the sync timestamp
+            // Update GitHubIssue record
             $githubIssue->issue_state = $issue['state'];
             $githubIssue->last_synced_at = now();
             $githubIssue->save();
@@ -247,22 +288,142 @@ class GitHubService
             return false;
         }
     }
-
+    
     /**
-     * Get all issues for a repository
+     * Get all issues from a repository
      */
     public function getRepositoryIssues(string $repository = null, string $state = 'all'): array
     {
         try {
             $repo = $this->parseRepository($repository);
             
-            return $this->client->api('issue')->all(
+            $issues = $this->client->api('issue')->all(
                 $repo['owner'],
                 $repo['repo'],
                 ['state' => $state]
             );
+            
+            return $issues;
         } catch (RuntimeException $e) {
             Log::error("GitHub API error: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Get repository statistics grouped by tag
+     */
+    public function getRepositoryStats(): array
+    {
+        $stats = [];
+        
+        // Get all repository tags
+        $repoTags = Tag::where('name', 'like', 'repo:%')->get();
+        
+        foreach ($repoTags as $tag) {
+            $repoName = substr($tag->name, 5);
+            $taskCount = $tag->tasks()->count();
+            $pendingCount = $tag->tasks()->where('status', Task::STATUS_PENDING)->count();
+            $inProgressCount = $tag->tasks()->where('status', Task::STATUS_IN_PROGRESS)->count();
+            $completedCount = $tag->tasks()->where('status', Task::STATUS_COMPLETED)->count();
+            
+            $stats[$repoName] = [
+                'tag' => $tag,
+                'task_count' => $taskCount,
+                'pending_count' => $pendingCount,
+                'in_progress_count' => $inProgressCount,
+                'completed_count' => $completedCount,
+                'completion_rate' => $taskCount > 0 ? round(($completedCount / $taskCount) * 100) : 0
+            ];
+        }
+        
+        return $stats;
+    }
+
+    /**
+     * Get all repositories from a GitHub organization
+     *
+     * @param string|null $organization GitHub organization name (defaults to GITHUB_ORGANIZATION env variable)
+     * @return array Array of repositories with name, description, and full_name
+     */
+    public function getAllRepositories(string $organization = null): array
+    {
+        try {
+            $org = $organization ?? env('GITHUB_ORGANIZATION', '');
+            
+            if (empty($org)) {
+                throw new \InvalidArgumentException('GitHub organization not specified');
+            }
+
+            Log::info("Fetching repositories for organization: {$org}");
+            
+            // Make sure the client is authenticated
+            if (!env('GITHUB_ACCESS_TOKEN')) {
+                Log::error("GitHub API token is not configured in environment");
+                return [];
+            }
+            
+            // Explicitly re-authenticate the client to ensure we have valid credentials
+            $this->client->authenticate(
+                env('GITHUB_ACCESS_TOKEN'),
+                null,
+                Client::AUTH_ACCESS_TOKEN
+            );
+            
+            // Try to fetch user repositories first as a fallback
+            try {
+                // Fetch all repositories for the authenticated user
+                Log::info("Attempting to fetch user repositories first");
+                $repositories = $this->client->api('current_user')->repositories();
+                
+                if (!empty($repositories)) {
+                    Log::info("Successfully fetched " . count($repositories) . " user repositories");
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to fetch user repositories: " . $e->getMessage());
+                $repositories = [];
+            }
+            
+            // If we couldn't get user repos or have none, try organization repos
+            if (empty($repositories)) {
+                try {
+                    // Fetch all repositories for the organization
+                    Log::info("Attempting to fetch organization repositories");
+                    $repositories = $this->client->api('organization')->repositories($org);
+                } catch (\Exception $e) {
+                    Log::error("Failed to fetch organization repositories: " . $e->getMessage());
+                    
+                    // Try one more fallback to public repositories
+                    try {
+                        Log::info("Attempting to fetch public repositories for org {$org}");
+                        $repositories = $this->client->api('repo')->org($org);
+                    } catch (\Exception $e2) {
+                        Log::error("Failed to fetch public repositories: " . $e2->getMessage());
+                        return [];
+                    }
+                }
+            }
+            
+            // Format the response to contain just the data we need
+            $formattedRepos = [];
+            foreach ($repositories as $repo) {
+                $formattedRepos[] = [
+                    'name' => $repo['name'],
+                    'full_name' => $repo['full_name'] ?? "{$org}/" . $repo['name'],
+                    'description' => $repo['description'] ?? '',
+                    'html_url' => $repo['html_url'] ?? "https://github.com/{$org}/" . $repo['name'],
+                    'updated_at' => $repo['updated_at'] ?? now()->toIso8601String(),
+                ];
+            }
+            
+            Log::info("Successfully formatted " . count($formattedRepos) . " repositories");
+            return $formattedRepos;
+            
+        } catch (RuntimeException $e) {
+            Log::error("GitHub API error when fetching repositories: " . $e->getMessage());
+            return [];
+        } catch (\Exception $e) {
+            Log::error("Unexpected error when fetching repositories: " . $e->getMessage());
             return [];
         }
     }
