@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\ZagroxAiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -11,18 +13,26 @@ class GenerateAiTasks extends Command
 {
     protected $signature = 'tasks:generate-ai
                             {--days=7 : Number of days to analyze}
-                            {--min-changes=5 : Minimum number of changes to trigger task generation}';
+                            {--min-changes=5 : Minimum number of changes to trigger task generation}
+                            {--auto-assign=1 : Automatically assign tasks to ZagroxAI based on config rules}
+                            {--create-issues=0 : Automatically create GitHub issues for generated tasks}';
 
-    protected $description = 'Generate AI tasks based on git commit analysis';
+    protected $description = 'Generate AI tasks based on git commit analysis and optionally assign to ZagroxAI';
 
     protected $taskFile;
     protected $tasks = [];
     protected $metadata = [];
+    
+    /**
+     * @var ZagroxAiService
+     */
+    protected $zagroxAiService;
 
-    public function __construct()
+    public function __construct(ZagroxAiService $zagroxAiService)
     {
         parent::__construct();
         $this->taskFile = base_path('project-management/tasks.json');
+        $this->zagroxAiService = $zagroxAiService;
     }
 
     public function handle()
@@ -42,6 +52,8 @@ class GenerateAiTasks extends Command
         // Get the number of days to analyze from options
         $days = $this->option('days');
         $minChanges = $this->option('min-changes');
+        $autoAssign = (bool)$this->option('auto-assign');
+        $createIssues = (bool)$this->option('create-issues');
 
         // Get recent git commits and analyze them
         $sinceDate = Carbon::now()->subDays($days)->format('Y-m-d');
@@ -52,9 +64,32 @@ class GenerateAiTasks extends Command
         $generatedTasks = $this->generateTasksFromAnalysis($fileChanges, $minChanges);
         
         if (count($generatedTasks) > 0) {
+            // Process automatic assignments if enabled
+            if ($autoAssign) {
+                $this->info('Checking tasks for automatic assignment to ZagroxAI...');
+                $assignedCount = 0;
+                
+                foreach ($generatedTasks as $index => $task) {
+                    if ($this->zagroxAiService->shouldAutoAssignToAi($task)) {
+                        $generatedTasks[$index]['assignee'] = 'ai';
+                        $generatedTasks[$index]['notes'][] = [
+                            'content' => "Automatically assigned to ZagroxAI based on task criteria",
+                            'timestamp' => Carbon::now()->toIso8601String()
+                        ];
+                        $assignedCount++;
+                    }
+                }
+                
+                if ($assignedCount > 0) {
+                    $this->info("Automatically assigned {$assignedCount} tasks to ZagroxAI");
+                }
+            }
+            
             // Add generated tasks to the task list
+            $taskIds = [];
             foreach ($generatedTasks as $task) {
                 $this->tasks[] = $task;
+                $taskIds[] = $task['id'];
             }
             
             // Update metadata
@@ -64,6 +99,25 @@ class GenerateAiTasks extends Command
             $this->saveTasksFile();
             
             $this->info('Generated ' . count($generatedTasks) . ' AI tasks.');
+            
+            // Create GitHub issues if enabled
+            if ($createIssues) {
+                $this->info('Creating GitHub issues for generated tasks...');
+                $createdCount = 0;
+                
+                foreach ($taskIds as $taskId) {
+                    try {
+                        $this->zagroxAiService->createGitHubIssueForTask($taskId);
+                        $createdCount++;
+                    } catch (\Exception $e) {
+                        $this->error("Failed to create GitHub issue for task #{$taskId}: " . $e->getMessage());
+                    }
+                }
+                
+                if ($createdCount > 0) {
+                    $this->info("Created {$createdCount} GitHub issues for tasks");
+                }
+            }
         } else {
             $this->info('No AI tasks were generated.');
         }
@@ -282,61 +336,83 @@ class GenerateAiTasks extends Command
 
     protected function createTask($title, $description, $feature, $files)
     {
-        // Calculate priority based on file changes and number of authors
+        // Get next task ID
+        $tasksData = json_decode(File::get($this->taskFile), true);
+        $nextId = $tasksData['next_id'] ?? 1;
+        
+        // Calculate priority based on number of changes and unique authors
         $totalChanges = 0;
         $uniqueAuthors = [];
+        $fileTypes = [];
         
         foreach ($files as $file => $data) {
             $totalChanges += $data['changes'];
             $uniqueAuthors = array_merge($uniqueAuthors, $data['authors']);
+            if (!in_array($data['type'], $fileTypes)) {
+                $fileTypes[] = $data['type'];
+            }
         }
         
         $uniqueAuthors = array_unique($uniqueAuthors);
         $authorCount = count($uniqueAuthors);
         
-        // Calculate priority: High if many changes or many authors
-        $priority = 'medium';
-        if ($totalChanges > 30 || $authorCount > 3) {
+        $priority = 'low';
+        if ($totalChanges > 20 || $authorCount > 3) {
             $priority = 'high';
-        } elseif ($totalChanges < 10 && $authorCount < 2) {
-            $priority = 'low';
+        } elseif ($totalChanges > 10 || $authorCount > 1) {
+            $priority = 'medium';
         }
-
-        // Get highest task ID from existing tasks
-        $nextId = 1;
-        foreach ($this->tasks as $task) {
-            if (is_numeric($task['id']) && $task['id'] >= $nextId) {
-                $nextId = $task['id'] + 1;
-            }
+        
+        // Generate tags
+        $tags = ['ai-generated'];
+        if (count($fileTypes) === 1) {
+            $tags[] = strtolower($fileTypes[0]);
         }
-
-        // Remove [AI] prefix if exists
-        $cleanTitle = $title;
-        if (substr($cleanTitle, 0, 5) === '[AI] ') {
-            $cleanTitle = substr($cleanTitle, 5);
+        
+        if (Str::contains(strtolower($feature), 'test')) {
+            $tags[] = 'testing';
         }
-
-        return [
+        
+        if (Str::contains(strtolower($title), ['refactor', 'optimize', 'improve'])) {
+            $tags[] = 'optimization';
+        }
+        
+        if (Str::contains(strtolower($title), ['document', 'doc'])) {
+            $tags[] = 'documentation';
+        }
+        
+        // Create the task
+        $task = [
             'id' => $nextId,
-            'title' => $cleanTitle,
+            'title' => $title,
             'description' => $description,
+            'assignee' => 'ai',
             'status' => 'pending',
             'priority' => $priority,
-            'assignee' => 'ai', // Set assignee to AI by default
             'created_at' => Carbon::now()->toIso8601String(),
             'updated_at' => Carbon::now()->toIso8601String(),
-            'due_date' => Carbon::now()->addDays(14)->toIso8601String(),
+            'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
+            'related_feature' => $feature,
+            'related_phase' => 'P3-ENHANCED',
+            'dependencies' => [],
             'progress' => 0,
-            'feature' => $feature,
-            'phase' => 'planning',
+            'notes' => [
+                [
+                    'content' => "Auto-generated task based on recent code changes.",
+                    'timestamp' => Carbon::now()->toIso8601String()
+                ]
+            ],
+            'tags' => $tags,
             'estimated_hours' => $this->estimateHours($files),
             'actual_hours' => 0,
-            'tags' => ['ai-generated', $feature, strtolower($priority)],
-            'notes' => [],
-            'version' => null,
-            'dependencies' => [],
-            'is_ai_generated' => true
+            'version' => Config::get('app.version', '1.0.0')
         ];
+        
+        // Update next_id
+        $tasksData['next_id'] = $nextId + 1;
+        File::put($this->taskFile, json_encode($tasksData, JSON_PRETTY_PRINT));
+        
+        return $task;
     }
 
     protected function estimateHours($files)
@@ -388,7 +464,8 @@ class GenerateAiTasks extends Command
                 'last_updated' => Carbon::now()->toIso8601String(),
                 'version' => '1.0'
             ],
-            'tasks' => []
+            'tasks' => [],
+            'next_id' => 1
         ];
 
         File::put($this->taskFile, json_encode($initialData, JSON_PRETTY_PRINT));

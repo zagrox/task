@@ -202,7 +202,7 @@
         <div class="container">
             <a class="navbar-brand" href="{{ route('tasks.index') }}">
                 <i class="fas fa-tasks me-2"></i>
-                Task Manager
+                ZAGROX AI
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -211,12 +211,17 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
-                            <i class="fas fa-list-ul me-1"></i> All Tasks
+                            <i class="fas fa-list-ul me-1"></i> Tasks
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('tasks.create') ? 'active' : '' }}" href="{{ route('tasks.create') }}">
-                            <i class="fas fa-plus me-1"></i> New Task
+                        <a class="nav-link {{ request()->routeIs('zagroxai.*') ? 'active' : '' }}" href="{{ route('zagroxai.dashboard') }}">
+                            <i class="fas fa-robot me-1"></i> AI
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('repositories.*') ? 'active' : '' }}" href="{{ route('repositories.index') }}">
+                            <i class="fas fa-code-branch me-1"></i> Repos
                         </a>
                     </li>
                     <li class="nav-item">
@@ -226,20 +231,24 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('tasks.report') ? 'active' : '' }}" href="{{ route('tasks.report') }}">
-                            <i class="fas fa-chart-bar me-1"></i> Reports
+                            <i class="fas fa-chart-bar me-1"></i> Insights
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('documentation.*') ? 'active' : '' }}" href="{{ route('documentation.index') }}">
+                            <i class="fas fa-book me-1"></i> Docs
                         </a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center">
-                    <span class="badge bg-light text-dark me-2">
-                        v{{ config('app.version') }}
-                    </span>
                     <div class="dropdown">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle me-1"></i> User
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item {{ request()->routeIs('user.settings') ? 'active' : '' }}" href="{{ route('user.settings') }}"><i class="fas fa-user-cog me-2"></i> Settings</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('ai.settings') ? 'active' : '' }}" href="{{ route('ai.settings') }}"><i class="fas fa-robot me-2"></i> AI Settings</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('about.index') ? 'active' : '' }}" href="{{ route('about.index') }}"><i class="fas fa-info-circle me-2"></i> About App</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                         </ul>
@@ -268,6 +277,21 @@
             </div>
         @endif
         
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-exclamation-triangle me-3 fa-lg"></i>
+                    <div><strong>Please check the form for errors</strong></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <ul class="mb-0 ps-4">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
         @yield('content')
     </main>
     
@@ -276,10 +300,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="mb-0">&copy; {{ date('Y') }} Task. All rights reserved.</p>
+                    <p class="mb-0">&copy; {{ date('Y') }} ZAGROX. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0">Version {{ config('app.version') }}</p>
+                    @php
+                        $versionData = json_decode(file_get_contents(base_path('version.json')), true);
+                        $version = $versionData['major'] . '.' . $versionData['minor'] . '.' . $versionData['patch'];
+                    @endphp
+                    <p class="mb-0">Version {{ $version }}</p>
                 </div>
             </div>
         </div>

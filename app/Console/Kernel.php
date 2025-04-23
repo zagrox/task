@@ -13,10 +13,13 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        // ... existing commands
-        Commands\Tasks\GenerateAiTasks::class,
-        Commands\UpdateVersion::class,
-        Commands\SyncTasksToGitHub::class,
+        \App\Console\Commands\GenerateAiTasks::class,
+        \App\Console\Commands\SyncTasksToGitHub::class,
+        \App\Console\Commands\UpdateVersion::class,
+        \App\Console\Commands\UpdateTaskStatus::class,
+        \App\Console\Commands\MigrateTasksFromJson::class,
+        \App\Console\Commands\ProcessAiTasks::class,
+        \App\Console\Commands\SeedTaskData::class,
     ];
 
     /**
@@ -50,11 +53,23 @@ class Kernel extends ConsoleKernel
                  ->at('09:00')
                  ->appendOutputTo(storage_path('logs/version-updates.log'));
 
-        // Sync tasks to GitHub daily at midnight
+        // Run AI task generation daily
+        $schedule->command('tasks:generate-ai')
+                 ->dailyAt('01:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/ai-task-generation.log'));
+                 
+        // Run GitHub synchronization daily
         $schedule->command('tasks:sync-to-github --all')
-                 ->daily()
-                 ->at('00:00')
+                 ->dailyAt('02:00')
+                 ->withoutOverlapping()
                  ->appendOutputTo(storage_path('logs/github-sync.log'));
+                 
+        // Run AI task processing every 6 hours
+        $schedule->command('tasks:process-ai --limit=3')
+                 ->everySixHours()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/ai-task-processing.log'));
     }
 
     /**

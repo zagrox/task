@@ -1,0 +1,21 @@
+{
+  "major": 0,
+  "minor": 1,
+  "patch": 1,
+  "history": [
+    {
+      "version": "0.1.1",
+      "date": "2025-04-21",
+      "notes": "Fixed task ID sequencing and implemented validation to prevent ID gaps"
+    }
+  ],
+  "backups": [],
+  "indexes": {
+    "by_date": {
+      "2025-04-21": 0
+    },
+    "by_version": {
+      "0.1.1": 0
+    }
+  }
+}

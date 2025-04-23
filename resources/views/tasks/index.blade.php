@@ -3,99 +3,105 @@
 @section('title', 'Task Dashboard')
 
 @section('content')
-<div class="container-fluid px-0">
+<div class="container-fluid py-4">
     <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-tasks text-primary me-2"></i>Task Dashboard
-        </h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold m-0">Task Dashboard</h2>
         <div>
             <a href="{{ route('tasks.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle me-1"></i> New Task
             </a>
-            <a href="{{ route('tasks.report') }}" class="btn btn-outline-primary ms-2">
+            <a href="{{ route('tags.index') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-tags me-1"></i> Tags
+            </a>
+            <a href="{{ route('tasks.report') }}" class="btn btn-outline-secondary ms-2">
                 <i class="fas fa-chart-bar me-1"></i> Reports
             </a>
-            <a href="{{ route('tasks.index') }}?sync_to_github=all" class="btn btn-dark ms-2">
+            <a href="{{ route('tasks.index') }}?sync_to_github=all" class="btn btn-outline-dark ms-2">
                 <i class="fab fa-github me-1"></i> Sync to GitHub
             </a>
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalTasks ?? count($tasks) }}</div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Tasks</h6>
+                            <h2 class="mb-0 fw-bold">{{ $totalTasks ?? count($tasks) }}</h2>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        <div class="p-2 rounded-circle bg-primary bg-opacity-10">
+                            <i class="fas fa-clipboard-list text-primary"></i>
                         </div>
+                    </div>
+                    <div class="progress mt-4" style="height: 4px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Completed Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $completedTasks }}</div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Completed</h6>
+                            <h2 class="mb-0 fw-bold">{{ $completedTasks }}</h2>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        <div class="p-2 rounded-circle bg-success bg-opacity-10">
+                            <i class="fas fa-check-circle text-success"></i>
                         </div>
+                    </div>
+                    <div class="progress mt-4" style="height: 4px;">
+                        @php
+                            $completedPercent = $totalTasks > 0 ? ($completedTasks / $totalTasks * 100) : 0;
+                        @endphp
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ $completedPercent }}%;" aria-valuenow="{{ $completedPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                In Progress</div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ $inProgressTasks }}</div>
-                                </div>
-                                <div class="col">
-                                    <div class="progress progress-sm mr-2">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ $inProgressPercentage }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">In Progress</h6>
+                            <h2 class="mb-0 fw-bold">{{ $inProgressTasks }}</h2>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-spinner fa-2x text-gray-300"></i>
+                        <div class="p-2 rounded-circle bg-warning bg-opacity-10">
+                            <i class="fas fa-spinner text-warning"></i>
                         </div>
+                    </div>
+                    <div class="progress mt-4" style="height: 4px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $inProgressPercentage }}%;" aria-valuenow="{{ $inProgressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingTasks }}</div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Pending</h6>
+                            <h2 class="mb-0 fw-bold">{{ $pendingTasks }}</h2>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                        <div class="p-2 rounded-circle bg-info bg-opacity-10">
+                            <i class="fas fa-hourglass-half text-info"></i>
                         </div>
+                    </div>
+                    <div class="progress mt-4" style="height: 4px;">
+                        @php
+                            $pendingPercent = $totalTasks > 0 ? ($pendingTasks / $totalTasks * 100) : 0;
+                        @endphp
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ $pendingPercent }}%;" aria-valuenow="{{ $pendingPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
@@ -108,7 +114,7 @@
             <!-- Task List Card -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Tasks</h6>
+                    <h6 class="m-0 fw-bold text-primary">Tasks</h6>
                     <div class="d-flex">
                         <div class="me-3">
                             <span class="badge bg-success me-1">{{ $completedTasks }}</span> Completed
@@ -119,25 +125,36 @@
                         <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                                 <i class="fas fa-filter me-1"></i> Filter
+                                @if(request()->has('status') || request()->has('priority') || request()->has('assignee') || request()->has('sort'))
+                                <span class="badge bg-primary ms-1">Active</span>
+                                @endif
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ route('tasks.index') }}">All Tasks</a></li>
+                                <li><a class="dropdown-item {{ !request()->has('status') && !request()->has('priority') && !request()->has('assignee') && !request()->has('sort') ? 'active' : '' }}" href="{{ route('tasks.index') }}">All Tasks</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">By Status</h6></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['status' => 'pending']) }}">Pending</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['status' => 'in-progress']) }}">In Progress</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['status' => 'review']) }}">Review</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['status' => 'completed']) }}">Completed</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['status' => 'blocked']) }}">Blocked</a></li>
+                                <li><a class="dropdown-item {{ request('status') == 'pending' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('status', 'page'), ['status' => 'pending'])) }}">Pending</a></li>
+                                <li><a class="dropdown-item {{ request('status') == 'in-progress' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('status', 'page'), ['status' => 'in-progress'])) }}">In Progress</a></li>
+                                <li><a class="dropdown-item {{ request('status') == 'review' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('status', 'page'), ['status' => 'review'])) }}">Review</a></li>
+                                <li><a class="dropdown-item {{ request('status') == 'completed' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('status', 'page'), ['status' => 'completed'])) }}">Completed</a></li>
+                                <li><a class="dropdown-item {{ request('status') == 'blocked' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('status', 'page'), ['status' => 'blocked'])) }}">Blocked</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">By Priority</h6></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['priority' => 'high']) }}">High</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['priority' => 'medium']) }}">Medium</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['priority' => 'low']) }}">Low</a></li>
+                                <li><a class="dropdown-item {{ request('priority') == 'high' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('priority', 'page'), ['priority' => 'high'])) }}">High</a></li>
+                                <li><a class="dropdown-item {{ request('priority') == 'medium' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('priority', 'page'), ['priority' => 'medium'])) }}">Medium</a></li>
+                                <li><a class="dropdown-item {{ request('priority') == 'low' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('priority', 'page'), ['priority' => 'low'])) }}">Low</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">By Assignee</h6></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['assignee' => 'user']) }}">User</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tasks.index', ['assignee' => 'ai']) }}">AI</a></li>
+                                <li><a class="dropdown-item {{ request('assignee') == 'user' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('assignee', 'page'), ['assignee' => 'user'])) }}">User</a></li>
+                                <li><a class="dropdown-item {{ request('assignee') == 'ai' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('assignee', 'page'), ['assignee' => 'ai'])) }}">AI</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">By Recency</h6></li>
+                                <li><a class="dropdown-item {{ request('sort') == 'newest' || !request('sort') ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('sort', 'page'), ['sort' => 'newest'])) }}">Newest First</a></li>
+                                <li><a class="dropdown-item {{ request('sort') == 'updated' ? 'active' : '' }}" href="{{ route('tasks.index', array_merge(request()->except('sort', 'page'), ['sort' => 'updated'])) }}">Recently Updated</a></li>
+                                @if(request()->has('status') || request()->has('priority') || request()->has('assignee') || request()->has('sort'))
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ route('tasks.index') }}"><i class="fas fa-times me-1"></i> Clear All Filters</a></li>
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -147,13 +164,14 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">#</th>
-                                    <th>Title</th>
-                                    <th>Status</th>
-                                    <th>Priority</th>
-                                    <th>Assignee</th>
-                                    <th>Due Date</th>
-                                    <th class="text-end pe-3">Actions</th>
+                                    <th class="ps-3" width="5%">#</th>
+                                    <th width="40%">Title</th>
+                                    <th width="15%">Repository</th>
+                                    <th width="10%">Status</th>
+                                    <th width="10%">Priority</th>
+                                    <th width="10%">Assignee</th>
+                                    <th width="15%">Due Date</th>
+                                    <th class="text-end pe-3" width="10%">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -175,8 +193,8 @@
                                                     <i class="fas fa-circle text-secondary"></i>
                                                 @endif
                                             </div>
-                                            <div>
-                                                <a href="{{ route('tasks.show', $task['id']) }}" class="fw-medium text-dark">
+                                            <div class="task-title-container">
+                                                <a href="{{ route('tasks.show', $task['id']) }}" class="fw-medium text-dark task-title">
                                                     {{ $task['title'] }}
                                                 </a>
                                                 @if(isset($task['version']) && $task['version'])
@@ -186,9 +204,23 @@
                                                     @if(isset($task['related_feature']) && $task['related_feature'])
                                                         <span class="text-muted">{{ $task['related_feature'] }}</span>
                                                     @endif
+                                                    @if(isset($task['created_at']) && $task['created_at'])
+                                                        <span class="text-muted ms-2">
+                                                            <i class="far fa-clock me-1"></i>{{ \Carbon\Carbon::parse($task['created_at'])->diffForHumans() }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if(isset($task['repository']) && $task['repository'])
+                                            <a href="{{ route('repositories.show', $task['repository']['id'] ?? 0) }}" class="badge bg-dark text-decoration-none">
+                                                <i class="fas fa-code-branch me-1"></i>{{ $task['repository']['name'] ?? $task['repository'] }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted small">No repository</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="badge 
@@ -224,24 +256,14 @@
                                         @endif
                                     </td>
                                     <td class="text-end pe-3">
-                                        <a href="{{ route('tasks.show', $task['id']) }}" class="btn btn-sm btn-outline-primary me-1">
+                                        <a href="{{ route('tasks.show', $task['id']) }}" class="btn btn-sm btn-outline-primary" title="View Task">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('tasks.edit', $task['id']) }}" class="btn btn-sm btn-outline-info me-1">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteTaskModal" 
-                                            data-task-id="{{ $task['id'] }}"
-                                            data-task-title="{{ $task['title'] }}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <div class="d-flex flex-column align-items-center">
                                             <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
                                             <h5 class="text-muted">No tasks found</h5>
@@ -268,6 +290,7 @@
                             @else
                                 Showing 1 to {{ count($tasks) }} of {{ count($tasks) }} entries
                             @endif
+                            <span class="ms-2 text-muted small">(20 per page)</span>
                         </div>
                         <div class="d-flex align-items-center">
                             @php
@@ -493,6 +516,20 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-bottom: 1rem;
         border-radius: 0.25rem;
         background-color: #eaecf4;
+    }
+    
+    .task-title-container {
+        max-width: 100%;
+    }
+    
+    .task-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+        line-height: 1.3;
     }
 </style>
 @endsection 

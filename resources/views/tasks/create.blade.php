@@ -177,6 +177,23 @@
                             @enderror
                         </div>
                         
+                        <div class="mb-3">
+                            <label for="repository_id" class="form-label">Repository</label>
+                            <select class="form-select @error('repository_id') is-invalid @enderror" 
+                                    id="repository_id" name="repository_id">
+                                <option value="">-- Select Repository --</option>
+                                @foreach(\App\Models\Repository::all() as $repo)
+                                    <option value="{{ $repo->id }}" {{ (old('repository_id') == $repo->id || request('repository') == $repo->id) ? 'selected' : '' }}>
+                                        {{ $repo->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">Select a repository to associate with this task</div>
+                            @error('repository_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
                         <div class="d-flex justify-content-end">
                             <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary me-2">Cancel</a>
                             <button type="submit" class="btn btn-primary">

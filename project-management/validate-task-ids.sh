@@ -1,11 +1,16 @@
 #!/bin/bash
 
-# Weekly task ID validation script
-# Add this to cron with: 0 0 * * 0 /path/to/validate-task-ids.sh
+# Task ID Validation Script
+# Validates task IDs and ensures they are sequential, with correct next_id
+# Author: AI Assistant
+# Date: 2025-04-21
 
-TASKS_FILE="$(dirname "$0")/tasks.json"
-BACKUP_DIR="$(dirname "$0")/backups"
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASKS_FILE="$SCRIPT_DIR/tasks.json"
+BACKUP_DIR="$SCRIPT_DIR/backups"
 BACKUP_FILE="$BACKUP_DIR/tasks.json.bak-$(date +"%Y%m%d%H%M%S")"
+LOG_FILE="$SCRIPT_DIR/task-validation.log"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
@@ -14,63 +19,193 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
-echo "=== Task ID Validation $(date) ==="
+# Log function
+log() {
+    echo "$(date): $1" | tee -a "$LOG_FILE"
+}
+
+log "=== Task ID Validation Started ==="
+
+# Create backup directory if it doesn't exist
+mkdir -p "$BACKUP_DIR"
 
 # Create backup before any potential changes
-mkdir -p "$BACKUP_DIR"
 cp "$TASKS_FILE" "$BACKUP_FILE"
-echo "Backup created at $BACKUP_FILE"
+log "Created backup at $BACKUP_FILE"
+
+# Get current version from version.json
+CURRENT_VERSION=$(jq -r '.major|tostring + "." + .minor|tostring + "." + .patch|tostring' "$SCRIPT_DIR/../version.json" 2>/dev/null || echo "Unknown")
+log "Current system version: $CURRENT_VERSION"
 
 # Check for duplicate IDs
-echo "Checking for duplicate IDs..."
-DUPLICATES=$(jq '.tasks[].id' "$TASKS_FILE" | sort | uniq -d)
-if [ ! -z "$DUPLICATES" ]; then
-    echo "Duplicate IDs found: $DUPLICATES"
-    echo "Running fix-task-ids.sh to resolve issues..."
-    "$(dirname "$0")/fix-task-ids.sh"
-else
-    echo "No duplicate IDs found."
+log "Checking for duplicate IDs..."
+DUPLICATE_IDS=$(jq -r '.tasks[].id' "$TASKS_FILE" | sort -n | uniq -d)
+if [ -n "$DUPLICATE_IDS" ]; then
+    log "WARNING: Duplicate IDs found: $DUPLICATE_IDS"
+    # We'll fix this below
 fi
 
-# Verify next_id
-echo "Verifying next_id value..."
+# Count tasks and get highest ID
 TASK_COUNT=$(jq '.tasks | length' "$TASKS_FILE")
+HIGHEST_ID=$(jq '.tasks | map(.id) | max' "$TASKS_FILE")
+NEXT_ID=$(jq '.next_id' "$TASKS_FILE")
 
-if [ "$TASK_COUNT" -gt 0 ]; then
-    HIGHEST_ID=$(jq '.tasks | map(.id) | max' "$TASKS_FILE")
-    NEXT_ID=$(jq '.next_id' "$TASKS_FILE")
+log "Task count: $TASK_COUNT"
+log "Highest ID: $HIGHEST_ID"
+log "Current next_id: $NEXT_ID"
+
+# Check for gap between highest ID and next_id
+if [ "$NEXT_ID" -le "$HIGHEST_ID" ]; then
+    NEW_NEXT_ID=$((HIGHEST_ID + 1))
+    log "WARNING: next_id ($NEXT_ID) is not greater than highest ID ($HIGHEST_ID)"
     
-    if [ "$NEXT_ID" -le "$HIGHEST_ID" ]; then
-        NEW_NEXT_ID=$((HIGHEST_ID + 1))
-        echo "Invalid next_id: $NEXT_ID (should be > $HIGHEST_ID)"
-        jq --argjson new_id "$NEW_NEXT_ID" '.next_id = $new_id' "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
-        mv "$TASKS_FILE.tmp" "$TASKS_FILE"
-        echo "Fixed next_id to: $NEW_NEXT_ID"
-    else
-        echo "next_id is valid: $NEXT_ID"
-    fi
-else
-    echo "No tasks found. next_id should be 1."
-    jq '.next_id = 1' "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
+    # Fix next_id
+    jq ".next_id = $NEW_NEXT_ID" "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
     mv "$TASKS_FILE.tmp" "$TASKS_FILE"
+    
+    log "Fixed next_id to $NEW_NEXT_ID"
 fi
 
-# Verify task ID sequence (should be unique integers)
-echo "Verifying task ID sequence..."
-EXPECTED_COUNT=$(jq '.tasks | length' "$TASKS_FILE")
-ACTUAL_COUNT=$(jq '.tasks[].id' "$TASKS_FILE" | sort -n | uniq | wc -l | tr -d ' ' 2>/dev/null || echo 0)
+# Check for non-sequential IDs or abnormal IDs (e.g., 999, 1000)
+log "Checking for non-sequential or abnormal IDs..."
 
-if [ "$EXPECTED_COUNT" -ne "$ACTUAL_COUNT" ] && [ "$EXPECTED_COUNT" -gt 0 ]; then
-    echo "Inconsistent task count detected: Found $ACTUAL_COUNT unique IDs but $EXPECTED_COUNT tasks"
-    echo "Running fix-task-ids.sh to ensure IDs are properly assigned..."
-    "$(dirname "$0")/fix-task-ids.sh"
+# Extract task IDs and sort them
+IDS=$(jq -r '.tasks[].id' "$TASKS_FILE" | sort -n)
+ID_COUNT=$(echo "$IDS" | wc -l | tr -d ' ')
+
+# Check if any IDs are more than 10 higher than expected
+PROBLEM_IDS=()
+HIGHEST_EXPECTED=$ID_COUNT
+INDEX=0
+
+for ID in $IDS; do
+    # Check if ID is more than 10 higher than its index position
+    if [ "$ID" -gt $((INDEX + HIGHEST_EXPECTED + 10)) ]; then
+        PROBLEM_IDS+=("$ID")
+    fi
+    
+    # Check for special problematic IDs
+    if [ "$ID" -eq 999 ] || [ "$ID" -eq 1000 ] && [ "$ID" -gt $HIGHEST_EXPECTED ]; then
+        PROBLEM_IDS+=("$ID")
+    fi
+    
+    INDEX=$((INDEX + 1))
+done
+
+# Fix problem IDs if found
+if [ ${#PROBLEM_IDS[@]} -gt 0 ]; then
+    log "WARNING: Problem IDs found: ${PROBLEM_IDS[*]}"
+    log "Fixing task IDs..."
+    
+    # Create temporary copy for modification
+    cp "$TASKS_FILE" "$TASKS_FILE.working"
+    
+    # For each problem ID, find that task and update its ID and version
+    for PROBLEM_ID in "${PROBLEM_IDS[@]}"; do
+        # Find a new ID starting from next_id
+        NEW_ID=$NEXT_ID
+        NEXT_ID=$((NEXT_ID + 1))
+        
+        # Update the task ID
+        jq --arg pid "$PROBLEM_ID" --arg nid "$NEW_ID" --arg ver "$CURRENT_VERSION" \
+           '.tasks = (.tasks | map(if .id == ($pid | tonumber) then .id = ($nid | tonumber) | .version = $ver else . end))' \
+           "$TASKS_FILE.working" > "$TASKS_FILE.tmp" && \
+        mv "$TASKS_FILE.tmp" "$TASKS_FILE.working"
+        
+        log "Changed task ID from $PROBLEM_ID to $NEW_ID"
+    done
+    
+    # Update next_id to new value
+    jq ".next_id = $NEXT_ID" "$TASKS_FILE.working" > "$TASKS_FILE.tmp" && \
+    mv "$TASKS_FILE.tmp" "$TASKS_FILE.working"
+    
+    # Update the original file
+    mv "$TASKS_FILE.working" "$TASKS_FILE"
+    
+    log "Task IDs have been fixed. New next_id is $NEXT_ID"
 else
-    echo "Task IDs are unique and consistent."
+    log "All task IDs are within acceptable range."
 fi
 
-echo "Task ID validation completed successfully."
+# Finally, ensure all tasks have the correct version
+if [ "$CURRENT_VERSION" != "Unknown" ]; then
+    log "Checking for tasks with old version numbers..."
+    
+    OUTDATED_TASKS=$(jq --arg ver "$CURRENT_VERSION" '.tasks[] | select(.version != $ver) | .id' "$TASKS_FILE")
+    
+    if [ -n "$OUTDATED_TASKS" ]; then
+        log "Updating version for tasks: $OUTDATED_TASKS"
+        
+        # Update version for all tasks with wrong version
+        jq --arg ver "$CURRENT_VERSION" '.tasks = (.tasks | map(if .version != $ver then .version = $ver else . end))' \
+           "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
+        mv "$TASKS_FILE.tmp" "$TASKS_FILE"
+        
+        log "Updated task versions to $CURRENT_VERSION"
+    else
+        log "All tasks have the correct version."
+    fi
+fi
 
-# Add this to crontab by running:
-# crontab -e
-# Then add this line to run every Sunday at midnight:
-# 0 0 * * 0 /path/to/task/project-management/validate-task-ids.sh >> /path/to/task/project-management/task-validation.log 2>&1
+log "Task ID validation completed successfully."
+
+# Add this script to git hooks
+if [ -d "$SCRIPT_DIR/../.git/hooks" ]; then
+    log "Adding pre-commit hook to validate task IDs..."
+    
+    # Create pre-commit hook if it doesn't exist
+    PRE_COMMIT_HOOK="$SCRIPT_DIR/../.git/hooks/pre-commit"
+    
+    if [ ! -f "$PRE_COMMIT_HOOK" ]; then
+        cat > "$PRE_COMMIT_HOOK" << 'EOL'
+#!/bin/bash
+
+# Run task validation script before commit
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+TASKS_SCRIPT="$PROJECT_ROOT/project-management/validate-task-ids.sh"
+
+if [ -f "$TASKS_SCRIPT" ]; then
+    echo "Running task ID validation..."
+    bash "$TASKS_SCRIPT"
+    
+    # Check for changes in tasks.json after validation
+    if git diff --name-only | grep -q "tasks.json"; then
+        echo "Task IDs were fixed. Please add the changes and commit again."
+        exit 1
+    fi
+fi
+
+exit 0
+EOL
+        chmod +x "$PRE_COMMIT_HOOK"
+        log "Created pre-commit hook at $PRE_COMMIT_HOOK"
+    elif ! grep -q "validate-task-ids.sh" "$PRE_COMMIT_HOOK"; then
+        # Append to existing pre-commit hook
+        cat >> "$PRE_COMMIT_HOOK" << 'EOL'
+
+# Run task validation script before commit
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+TASKS_SCRIPT="$PROJECT_ROOT/project-management/validate-task-ids.sh"
+
+if [ -f "$TASKS_SCRIPT" ]; then
+    echo "Running task ID validation..."
+    bash "$TASKS_SCRIPT"
+    
+    # Check for changes in tasks.json after validation
+    if git diff --name-only | grep -q "tasks.json"; then
+        echo "Task IDs were fixed. Please add the changes and commit again."
+        exit 1
+    fi
+fi
+EOL
+        log "Added task validation to existing pre-commit hook"
+    else
+        log "Pre-commit hook already contains task validation"
+    fi
+fi
+
+# Set the script as executable
+chmod +x "$0"
+
+log "=== Task ID Validation Finished ==="
+exit 0

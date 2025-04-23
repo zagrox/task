@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Fix Task IDs Script
-# This script fixes duplicate task IDs and ensures proper sorting and ID assignment
+# This script fixes task IDs by ensuring proper sequential numbering and updates the next_id
 
-TASKS_FILE="tasks.json"
-BACKUP_DIR="backups"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TASKS_FILE="$SCRIPT_DIR/tasks.json"
+BACKUP_DIR="$SCRIPT_DIR/backups"
 BACKUP_FILE="$BACKUP_DIR/tasks.json.bak-$(date +"%Y%m%d%H%M%S")"
 
 # Check if jq is installed
@@ -19,116 +20,83 @@ echo "Creating backup at $BACKUP_FILE..."
 mkdir -p "$BACKUP_DIR"
 cp "$TASKS_FILE" "$BACKUP_FILE"
 
-# Sort tasks by creation date
-echo "Extracting tasks and sorting by creation date..."
-jq -c '.tasks[]' "$TASKS_FILE" | jq -s 'sort_by(.created_at)' > sorted_tasks.json
+# Check current version from version.json
+CURRENT_VERSION=$(jq -r '.major|tostring + "." + .minor|tostring + "." + .patch|tostring' "$SCRIPT_DIR/../version.json")
+echo "Current system version: $CURRENT_VERSION"
 
-# Re-assign task IDs sequentially
-echo "Re-assigning task IDs sequentially..."
-jq -c 'to_entries | map(.value += {"id": (.key + 1)}) | map(.value)' sorted_tasks.json > renumbered_tasks.json
+# Extract tasks and identify non-sequential or abnormal IDs
+echo "Analyzing tasks for ID issues..."
+TASKS_COUNT=$(jq '.tasks | length' "$TASKS_FILE")
+echo "Total tasks: $TASKS_COUNT"
 
-# Count total tasks for next_id
-TASK_COUNT=$(jq 'length' renumbered_tasks.json)
-NEXT_ID=$((TASK_COUNT + 1))
-echo "Total tasks: $TASK_COUNT, Next ID will be: $NEXT_ID"
+# Get the highest task ID
+HIGHEST_ID=$(jq '.tasks | map(.id) | max' "$TASKS_FILE")
+echo "Highest task ID: $HIGHEST_ID"
 
-# Update the tasks file with new IDs
-echo "Updating tasks.json with fixed IDs..."
-jq --argjson tasks "$(cat renumbered_tasks.json)" --argjson next_id "$NEXT_ID" \
-   '.tasks = $tasks | .next_id = $next_id' "$TASKS_FILE" > tmp_tasks.json
+# Get the next_id value
+NEXT_ID=$(jq '.next_id' "$TASKS_FILE")
+echo "Current next_id: $NEXT_ID"
 
-# Update metadata
-echo "Updating metadata..."
-COMPLETED=$(jq '.tasks[] | select(.status == "completed") | .id' tmp_tasks.json | wc -l | tr -d ' ')
-USER_TASKS=$(jq '.tasks[] | select(.assignee == "user") | .id' tmp_tasks.json | wc -l | tr -d ' ')
-AI_TASKS=$(jq '.tasks[] | select(.assignee == "ai") | .id' tmp_tasks.json | wc -l | tr -d ' ')
+# Check for ID gaps or abnormally high IDs (more than 10 from the expected sequence)
+EXPECTED_MAX_ID=$TASKS_COUNT
+ABNORMAL_IDS=$(jq -c '.tasks[] | select(.id > '"$EXPECTED_MAX_ID"' + 10 or .id == 999 or .id == 1000)' "$TASKS_FILE")
 
-jq --argjson total "$TASK_COUNT" \
-   --argjson completed "$COMPLETED" \
-   --argjson user_tasks "$USER_TASKS" \
-   --argjson ai_tasks "$AI_TASKS" \
-   --arg updated "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-   '.metadata.total_tasks = $total |
-    .metadata.completed_tasks = $completed |
-    .metadata.user_tasks = $user_tasks |
-    .metadata.ai_tasks = $ai_tasks |
-    .metadata.last_updated = $updated' tmp_tasks.json > "$TASKS_FILE"
+if [ -n "$ABNORMAL_IDS" ]; then
+    echo "Found abnormal task IDs that need fixing..."
+    
+    # Create a temporary file with the adjusted tasks
+    jq -c '.tasks | to_entries | map(
+        if .value.id > '$EXPECTED_MAX_ID' + 10 or .value.id == 999 or .value.id == 1000 then 
+            .value += {"id": (.key + '$NEXT_ID' - .index)} 
+        else 
+            .value 
+        end
+    ) | map(.value)' "$TASKS_FILE" > /tmp/adjusted_tasks.json
+    
+    # Update version information for all tasks to current version
+    jq -c 'map(if .version == "1.0.0" then . + {"version": "'"$CURRENT_VERSION"'"} else . end)' /tmp/adjusted_tasks.json > /tmp/fixed_tasks.json
+    
+    # Update the tasks file with fixed tasks and next_id
+    NEW_NEXT_ID=$((TASKS_COUNT + 1))
+    jq --slurpfile tasks /tmp/fixed_tasks.json '.tasks = $tasks[0] | .next_id = '"$NEW_NEXT_ID" "$TASKS_FILE" > /tmp/fixed_tasks_file.json
+    
+    # Update metadata
+    COMPLETED_COUNT=$(jq '.tasks | map(select(.status == "completed")) | length' /tmp/fixed_tasks_file.json)
+    USER_COUNT=$(jq '.tasks | map(select(.assignee == "user")) | length' /tmp/fixed_tasks_file.json)
+    AI_COUNT=$(jq '.tasks | map(select(.assignee == "ai")) | length' /tmp/fixed_tasks_file.json)
+    
+    jq '.metadata.total_tasks = '"$TASKS_COUNT"' | 
+        .metadata.completed_tasks = '"$COMPLETED_COUNT"' | 
+        .metadata.user_tasks = '"$USER_COUNT"' | 
+        .metadata.ai_tasks = '"$AI_COUNT"' | 
+        .metadata.last_updated = "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'"' /tmp/fixed_tasks_file.json > /tmp/final_tasks.json
+    
+    # Replace original file
+    mv /tmp/final_tasks.json "$TASKS_FILE"
+    
+    echo "Task IDs have been fixed successfully."
+    echo "All abnormal task IDs have been renumbered."
+    echo "Task versions have been updated to $CURRENT_VERSION where needed."
+    echo "Next ID is set to $NEW_NEXT_ID."
+else
+    echo "No abnormal task IDs found. Only checking next_id..."
+    
+    # Still ensure next_id is correct (greater than highest ID)
+    if [ "$NEXT_ID" -le "$HIGHEST_ID" ]; then
+        NEW_NEXT_ID=$((HIGHEST_ID + 1))
+        echo "Fixing next_id from $NEXT_ID to $NEW_NEXT_ID"
+        
+        jq '.next_id = '"$NEW_NEXT_ID" "$TASKS_FILE" > /tmp/fixed_next_id.json
+        mv /tmp/fixed_next_id.json "$TASKS_FILE"
+    else
+        echo "next_id is already correct."
+    fi
+fi
 
-# Clean up temporary files
-rm sorted_tasks.json renumbered_tasks.json tmp_tasks.json
-
-echo "Task IDs have been fixed successfully."
-echo "All tasks now have unique IDs from 1 to $TASK_COUNT."
-echo "Next ID is set to $NEXT_ID."
-echo ""
-echo "Updates applied to $TASKS_FILE"
+echo "Task ID verification completed."
 echo "Backup saved to $BACKUP_FILE"
 
-# Modify task-manager.sh to prevent duplicate IDs in the future
-TASK_MANAGER="task-manager.sh"
-if [ -f "$TASK_MANAGER" ]; then
-    echo "Updating task-manager.sh to prevent future ID issues..."
-    
-    # Create a backup of task-manager.sh
-    cp "$TASK_MANAGER" "$TASK_MANAGER.bak"
-    
-    # Add a function to validate next_id before adding tasks
-    sed -i.bak '/update_metadata()/a\
-\
-# Validate and fix next_id if needed\
-validate_next_id() {\
-    # Find highest ID currently in use\
-    local highest_id=$(jq '"'"'.tasks[].id | max // 0'"'"' "$TASKS_FILE")\
-    # Ensure next_id is greater than highest_id\
-    local current_next_id=$(jq '"'"'.next_id'"'"' "$TASKS_FILE")\
-    \
-    if [[ $current_next_id -le $highest_id ]]; then\
-        local new_next_id=$((highest_id + 1))\
-        echo "Warning: Fixing inconsistent next_id. Was $current_next_id, now $new_next_id"\
-        \
-        jq --argjson new_id "$new_next_id" '"'"'.next_id = $new_id'"'"' "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
-        mv "$TASKS_FILE.tmp" "$TASKS_FILE"\
-    fi\
-}' "$TASK_MANAGER"
+# Clean up temporary files
+rm -f /tmp/adjusted_tasks.json /tmp/fixed_tasks.json /tmp/fixed_tasks_file.json 2>/dev/null
 
-    # Add validate_next_id call before adding a task
-    sed -i.bak 's/# Get the next ID/# Validate next_id\n    validate_next_id\n\n    # Get the next ID/' "$TASK_MANAGER"
-    
-    echo "Task manager script has been updated to prevent duplicate IDs."
-else
-    echo "Warning: task-manager.sh file not found. Manual update required."
-fi
-
-# Add a periodic ID validation to ensure all future operations maintain ID integrity
-# Create an automatic ID checker that runs weekly
-cat > "validate-task-ids.sh" << 'EOL'
-#!/bin/bash
-
-# Weekly task ID validation script
-# Add this to cron with: 0 0 * * 0 /path/to/validate-task-ids.sh
-
-TASKS_FILE="$(dirname "$0")/tasks.json"
-
-# Check for duplicate IDs
-DUPLICATES=$(jq '.tasks[].id' "$TASKS_FILE" | sort | uniq -d)
-if [ ! -z "$DUPLICATES" ]; then
-    echo "Duplicate IDs found: $DUPLICATES"
-    echo "Running fix-task-ids.sh to resolve issues..."
-    "$(dirname "$0")/fix-task-ids.sh"
-fi
-
-# Verify next_id
-HIGHEST_ID=$(jq '.tasks[].id | max // 0' "$TASKS_FILE")
-NEXT_ID=$(jq '.next_id' "$TASKS_FILE")
-if [ "$NEXT_ID" -le "$HIGHEST_ID" ]; then
-    NEW_NEXT_ID=$((HIGHEST_ID + 1))
-    echo "Invalid next_id: $NEXT_ID (should be > $HIGHEST_ID)"
-    jq --argjson new_id "$NEW_NEXT_ID" '.next_id = $new_id' "$TASKS_FILE" > "$TASKS_FILE.tmp" && \
-    mv "$TASKS_FILE.tmp" "$TASKS_FILE"
-    echo "Fixed next_id to: $NEW_NEXT_ID"
-fi
-EOL
-
-chmod +x "validate-task-ids.sh"
-echo "Created weekly validation script: validate-task-ids.sh"
-echo "Consider adding this to cron for periodic validation." 
+exit 0 
