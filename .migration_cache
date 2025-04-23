@@ -7,3 +7,4 @@ database/migrations/2025_04_19_183337_create_github_issues_table.php
 database/migrations/2025_04_21_224303_create_task_dependencies_table.php
 database/migrations/2025_04_21_224308_create_tag_task_table.php
 database/migrations/2025_04_21_224444_create_tags_table.php
+database/migrations/2025_04_23_170907_update_tasks_sync_mechanism.php

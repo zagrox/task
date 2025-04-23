@@ -48,6 +48,7 @@ class TaskController extends Controller
         $status = $request->input('status');
         $priority = $request->input('priority');
         $assignee = $request->input('assignee');
+        $repository_id = $request->input('repository');
         $sort = $request->input('sort', 'newest'); // Default sort by newest
 
         // Filter by status if specified
@@ -68,6 +69,13 @@ class TaskController extends Controller
         if ($assignee) {
             $tasks = array_filter($tasks, function($task) use ($assignee) {
                 return $task['assignee'] === $assignee;
+            });
+        }
+        
+        // Filter by repository if specified
+        if ($repository_id) {
+            $tasks = array_filter($tasks, function($task) use ($repository_id) {
+                return isset($task['repository_id']) && $task['repository_id'] == $repository_id;
             });
         }
         
@@ -162,6 +170,9 @@ class TaskController extends Controller
         // Load repository data for each task
         $paginatedTasks = $this->loadRepositoriesForTasks($paginatedTasks);
         
+        // Get all repositories for filter dropdown
+        $repositories = Repository::orderBy('name')->get();
+        
         $pagination = [
             'current_page' => (int)$currentPage,
             'per_page' => $perPage,
@@ -188,7 +199,8 @@ class TaskController extends Controller
             'mediumPriorityPercentage' => $mediumPriorityPercentage,
             'lowPriorityPercentage' => $lowPriorityPercentage,
             'upcomingTasks' => $upcomingTasks,
-            'pagination' => $pagination
+            'pagination' => $pagination,
+            'repositories' => $repositories
         ]);
     }
     
