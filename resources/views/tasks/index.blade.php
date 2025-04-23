@@ -218,6 +218,17 @@
                                             <a href="{{ route('repositories.show', $task['repository']['id'] ?? 0) }}" class="badge bg-dark text-decoration-none">
                                                 <i class="fas fa-code-branch me-1"></i>{{ $task['repository']['name'] ?? $task['repository'] }}
                                             </a>
+                                        @elseif(isset($task['repository_id']) && $task['repository_id'])
+                                            @php
+                                                $repository = \App\Models\Repository::find($task['repository_id']);
+                                            @endphp
+                                            @if($repository)
+                                                <a href="{{ route('repositories.show', $repository->id) }}" class="badge bg-dark text-decoration-none">
+                                                    <i class="fas fa-code-branch me-1"></i>{{ $repository->name }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted small">Repository #{{ $task['repository_id'] }}</span>
+                                            @endif
                                         @else
                                             <span class="text-muted small">No repository</span>
                                         @endif

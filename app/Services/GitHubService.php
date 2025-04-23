@@ -125,15 +125,40 @@ class GitHubService
             return null;
         }
         
-        // Get repository from task tags
-        $repository = $this->getRepositoryFromTask($task);
+        // Check if task has a repository_id
+        $repository = $this->repository; // Default repository
+        
+        if (isset($task['repository_id']) && !empty($task['repository_id'])) {
+            // Try to load the repository model
+            try {
+                $repositoryModel = app('db')->table('repositories')->find($task['repository_id']);
+                
+                if ($repositoryModel && !empty($repositoryModel->github_repo)) {
+                    Log::info("Found repository from repository_id", [
+                        'repository_id' => $task['repository_id'],
+                        'repository' => $repositoryModel->github_repo
+                    ]);
+                    $repository = $repositoryModel->github_repo;
+                } else {
+                    // Fall back to tags-based repository
+                    Log::warning("Repository not found for ID {$task['repository_id']}, falling back to tags");
+                    $repository = $this->getRepositoryFromTask($task);
+                }
+            } catch (\Exception $e) {
+                Log::error("Error loading repository: " . $e->getMessage());
+                $repository = $this->getRepositoryFromTask($task);
+            }
+        } else {
+            // Fall back to tags-based repository
+            $repository = $this->getRepositoryFromTask($task);
+        }
         
         if (!$githubIssue->repository) {
             $githubIssue->repository = $repository;
             Log::info("Set repository to {$repository}");
         }
         
-        Log::info("Task found", ['title' => $task['title']]);
+        Log::info("Task found", ['title' => $task['title'], 'repository' => $repository]);
         
         try {
             $repo = $this->parseRepository($githubIssue->repository);

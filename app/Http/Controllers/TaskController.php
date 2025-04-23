@@ -12,6 +12,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Models\Repository;
 
 class TaskController extends Controller
 {
@@ -158,6 +159,9 @@ class TaskController extends Controller
         $offset = ($currentPage - 1) * $perPage;
         $paginatedTasks = array_slice($tasks, $offset, $perPage);
         
+        // Load repository data for each task
+        $paginatedTasks = $this->loadRepositoriesForTasks($paginatedTasks);
+        
         $pagination = [
             'current_page' => (int)$currentPage,
             'per_page' => $perPage,
@@ -212,6 +216,19 @@ class TaskController extends Controller
         
         if (!$task) {
             return redirect()->route('tasks.index')->with('error', "Task #{$id} not found");
+        }
+        
+        // Load repository data if task has repository_id
+        if (!empty($task['repository_id'])) {
+            $repository = \App\Models\Repository::find($task['repository_id']);
+            if ($repository) {
+                $task['repository'] = [
+                    'id' => $repository->id,
+                    'name' => $repository->name,
+                    'color' => $repository->color,
+                    'github_repo' => $repository->github_repo
+                ];
+            }
         }
         
         // Get dependent tasks
@@ -1020,5 +1037,43 @@ class TaskController extends Controller
             'inProgressTasks' => $inProgressTasks,
             'completedTasks' => $completedTasks
         ]);
+    }
+
+    /**
+     * Load repository data for tasks with repository_id
+     */
+    protected function loadRepositoriesForTasks($tasks)
+    {
+        $repositoryIds = [];
+        
+        // Collect all repository IDs from tasks
+        foreach ($tasks as $task) {
+            if (!empty($task['repository_id'])) {
+                $repositoryIds[] = $task['repository_id'];
+            }
+        }
+        
+        // If no repositories to load, return tasks as is
+        if (empty($repositoryIds)) {
+            return $tasks;
+        }
+        
+        // Load repositories in one query
+        $repositories = \App\Models\Repository::whereIn('id', $repositoryIds)->get()->keyBy('id');
+        
+        // Add repository data to each task
+        foreach ($tasks as &$task) {
+            if (!empty($task['repository_id']) && isset($repositories[$task['repository_id']])) {
+                $repo = $repositories[$task['repository_id']];
+                $task['repository'] = [
+                    'id' => $repo->id,
+                    'name' => $repo->name,
+                    'color' => $repo->color,
+                    'github_repo' => $repo->github_repo
+                ];
+            }
+        }
+        
+        return $tasks;
     }
 } 
